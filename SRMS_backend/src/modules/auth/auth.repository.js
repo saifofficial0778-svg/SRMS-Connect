@@ -73,7 +73,7 @@ const AuthRepository = {
     async findUserForLogin(enrollment) {
         const [user] = await pool.execute(
             `
-            SELECT id , password_hash,status
+            SELECT id , password_hash,status,role
             FROM users
             WHERE enrollment=?
             LIMIT 1

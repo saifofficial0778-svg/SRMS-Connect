@@ -69,7 +69,9 @@ const AuthService = {
         }
 
         const token = jwt.sign(
-            { userId: userForLogin.id },
+            { userId: userForLogin.id ,
+                role: userForLogin.role
+            },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         )

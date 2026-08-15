@@ -15,8 +15,10 @@ app.use(cors({
 app.use(express.json());
 
 const authRoutes=require('./src/modules/auth/auth.route')
+const userRoutes=require('./src/modules/userManagement/userManagement.route')
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 
 
