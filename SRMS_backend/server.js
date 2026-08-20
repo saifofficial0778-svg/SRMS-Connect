@@ -16,9 +16,11 @@ app.use(express.json());
 
 const authRoutes=require('./src/modules/auth/auth.route')
 const userRoutes=require('./src/modules/userManagement/userManagement.route')
+const profileRoutes=require('./src/modules/profile/profile.route')
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/profile", profileRoutes);
 
 
 

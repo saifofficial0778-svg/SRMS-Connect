@@ -16,7 +16,7 @@ const AuthService = {
         } = registerData;
 
         const student = await authRepository.findStudentByEnrollmentAndDob(enrollment, dob)
-
+        let role;
         let alumni;
         if (student) {
             role = "STUDENT";
@@ -31,6 +31,8 @@ const AuthService = {
             throw new AppError("Invalid enrollment or date of birth", 400);
         }
 
+        const fullName = student?.full_name || alumni?.full_name;
+
         const user = await authRepository.findUserByEnrollment(enrollment)
         if (user) {
             throw new AppError("User already registered", 409)
@@ -44,9 +46,29 @@ const AuthService = {
             role,
             status: "ACTIVE"
         };
+        
 
-        const userId = await authRepository.createUser(userData);
-        return userId
+        const connection=await pool.getConnection()
+        let userId
+        let profile
+        try{
+            await connection.beginTransaction();
+             userId=await authRepository.createUser(connection,userData)
+
+
+             profile=await authRepository.createProfile(connection,{userId,fullName})
+
+            await connection.commit()
+        }catch(error){
+            await connection.rollback()
+            throw error
+        }finally{
+            connection.release()
+        }
+        return{
+            userId,
+            profile
+        }
 
     },
     async login(enrollment, password, sessionInfo) {

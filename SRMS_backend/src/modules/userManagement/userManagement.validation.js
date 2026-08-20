@@ -8,6 +8,11 @@ const getUsersSchema = z.object({
     limit: z.coerce.number().int().min(1).max(50).default(10),
 });
 
+const updateUserStatusSchema = z.object({
+    status: z.enum(["ACTIVE", "PENDING", "BLOCKED", "REJECTED"])
+});
+
 module.exports = {
     getUsersSchema,
+    updateUserStatusSchema
 };

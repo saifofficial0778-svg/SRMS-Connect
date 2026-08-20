@@ -1,4 +1,3 @@
-
 const pool = require('../../config/db')
 
 const UserRepository = {
@@ -73,7 +72,38 @@ const UserRepository = {
         const [result] = await pool.execute(query, params);
 
         return result[0].total;
-    }
+    },
+
+    async findUserById(id) {
+        const [result] = await pool.execute(
+            `
+            SELECT 
+                id,
+                role,
+                status
+            FROM 
+                users
+            WHERE
+                id=?
+            `, [id]
+        )
+        return result[0]
+    },
+
+    async updateUserStatus(id,status) {
+        const [result]=await pool.execute(
+            `
+            UPDATE users
+            SET 
+                status=?
+            WHERE
+                id=?
+            `,[status,id]
+        )
+        result.affectedRows
+    },
+
+    
 
 };
 

@@ -5,7 +5,8 @@ const AuthRepository = {
     async findStudentByEnrollmentAndDob(enrollment, dob) {
         const [result] = await pool.execute(
             `
-        SELECT enrollment
+        SELECT enrollment,
+        full_name
         FROM student_master
         WHERE enrollment = ?
         AND dob = ?
@@ -20,7 +21,8 @@ const AuthRepository = {
     async findAlumniByEnrollmentAndDob(enrollment, dob) {
         const [result] = await pool.execute(
             `
-        SELECT enrollment
+        SELECT enrollment,
+        full_name
         FROM alumni_master
         WHERE enrollment = ?
         AND dob = ?
@@ -46,7 +48,7 @@ const AuthRepository = {
         return result[0];
     },
 
-    async createUser(userData) {
+    async createUser(connection,userData) {
         const {
             enrollment,
             passwordHash,
@@ -54,7 +56,7 @@ const AuthRepository = {
             status
         } = userData;
 
-        const [result] = await pool.execute(
+        const [result] = await connection.execute(
             `
         INSERT INTO users (
             enrollment,
@@ -68,6 +70,24 @@ const AuthRepository = {
         );
 
         return result.insertId;
+    },
+
+    async createProfile(connection,profileData){
+        const {userId,fullName}=profileData
+
+        const [result] = await connection.execute(
+            `
+        INSERT INTO profiles (
+            user_id,
+            full_name
+        )
+        VALUES (?, ?)
+        `,
+            [userId,fullName]
+        );
+
+        return result.insertId;
+
     },
 
     async findUserForLogin(enrollment) {

@@ -1,5 +1,7 @@
 const UserService=require('./userManagement.service')
-const catchAsync=require('../../utils/catchAsync')
+const catchAsync=require('../../utils/catchAsync');
+const { success } = require('zod');
+const { updateUserStatus } = require('./userManagement.repository');
 
 const UserController = {
 
@@ -18,6 +20,33 @@ const UserController = {
             data: users
         });
     }),
+
+    getUserById:catchAsync(async (req,res)=>{
+        const {id}=req.params
+
+        const result=await UserService.getUserById(id)
+
+        return res.status(200).json({
+            success:true,
+            message: "User fetched successfully",
+            data:result
+        })
+
+    }),
+
+    updateUserStatus:catchAsync(async(req,res)=>{
+        const {id}=req.params
+        const {status}=req.body
+
+        const result=await UserService.updateUserStatus(id,status)
+
+        return res.status(200).json({
+            success:true,
+            message: "status updated successfully",
+            data:result
+        })
+        
+    })
 
 };
 

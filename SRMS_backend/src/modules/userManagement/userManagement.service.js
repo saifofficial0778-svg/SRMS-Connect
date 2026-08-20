@@ -1,4 +1,5 @@
 const userRepository = require("./userManagement.repository");
+const AppError = require('../../utils/AppError')
 
 const UserService = {
 
@@ -27,6 +28,36 @@ const UserService = {
                 totalPages
             }
         };
+    },
+
+    async getUserById(id) {
+        const user = await userRepository.findUserById(id)
+        if (!user) {
+            throw new AppError("user not found", 404)
+        }
+
+        return user
+    },
+
+    async updateUserStatus(id, status) {
+        const user = await userRepository.findUserById(id)
+        if (!user) {
+            throw new AppError("user not found", 404)
+        }
+        if (user.status === status) {
+            throw new AppError("User already has this status", 400);
+        }
+
+        if (
+            (user.status === "ACTIVE" && status !== "BLOCKED") ||
+            (user.status === "BLOCKED" && status !== "ACTIVE")
+        ) {
+            throw new AppError("Invalid status transition", 400);
+        }
+
+        const result = await userRepository.updateUserStatus(id, status)
+
+        return result
     }
 
 };
