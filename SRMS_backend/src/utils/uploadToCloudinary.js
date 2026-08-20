@@ -20,4 +20,4 @@ const uploadToCloudinary = (buffer, folder, resourceType) => {
     });
 };
 
-module.exports = uploadToCloudinary;
+module.exports = uploadToCloudinary; 
