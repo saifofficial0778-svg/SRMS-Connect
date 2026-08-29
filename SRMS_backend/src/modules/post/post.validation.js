@@ -7,7 +7,18 @@ const createPostSchema = z.object({
 const updatePostSchema = z.object({
     content: z.string().trim().min(1).max(5000)
 });
+
+const addCommentSchema = z.object({
+    content: z.string().trim().min(1).max(2000)
+});
+
+const updateCommentSchema = z.object({
+    content: z.string().trim().min(1).max(2000)
+});
+
 module.exports = {
     createPostSchema,
-    updatePostSchema
+    updatePostSchema,
+    addCommentSchema,
+    updateCommentSchema
 };
