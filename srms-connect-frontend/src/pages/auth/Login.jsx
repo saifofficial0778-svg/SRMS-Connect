@@ -1,10 +1,12 @@
 import React from "react";
 import { useState } from "react";
 import { loginUser } from "../../services/authService"; // Adjust the import path as needed
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [enrollment, setEnrollment] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -15,7 +17,11 @@ const Login = () => {
         password,
       });
 
+      localStorage.setItem("token", data.data.token);
+      localStorage.setItem("userId", data.data.userId);
+
       console.log("Login Success:", data);
+      navigate("/home"); 
     } catch (error) {
       console.log("Login Error:", error.response?.data || error.message);
     }

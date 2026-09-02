@@ -18,11 +18,13 @@ const authRoutes=require('./src/modules/auth/auth.route')
 const userRoutes=require('./src/modules/userManagement/userManagement.route')
 const profileRoutes=require('./src/modules/profile/profile.route')
 const postRoutes=require('./src/modules/post/post.route')
+const connectionRoutes = require("./src/modules/connection/connection.route");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/connections", connectionRoutes);
 
 
 
