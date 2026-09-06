@@ -7,12 +7,12 @@ const globalErrorHandler = require('./src/middlewares/errorMiddleware');
 const AppError = require('./src/utils/AppError');  
 const app = express();
 
+app.use(express.json());
 // Middlewares
 app.use(cors({
   origin: 'http://localhost:5173', // Tumhaare frontend ka address
   credentials: true 
 }));
-app.use(express.json());
 
 const authRoutes=require('./src/modules/auth/auth.route')
 const userRoutes=require('./src/modules/userManagement/userManagement.route')

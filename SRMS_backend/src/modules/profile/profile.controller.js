@@ -31,6 +31,7 @@ const ProfileController = {
     }),
 
     addSkill: catchAsync(async (req, res) => {
+        console.log("BODY:", req.body);
         const { userId } = req.user;
         const { skill } = req.body;
 
@@ -80,6 +81,32 @@ const ProfileController = {
             message: "Project deleted successfully"
         });
     }),
+
+    updateProfilePhoto: catchAsync(async (req, res) => {
+        const userId = req.user.userId;
+
+        const result = await ProfileService.updateProfilePhoto(
+            userId,
+            req.file
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Profile photo updated successfully",
+            data: result
+        });
+    }),
+
+    deleteProfilePhoto: catchAsync(async (req, res) => {
+        const userId = req.user.userId;
+        const result = await ProfileService.deleteProfilePhoto(userId);
+        res.status(200).json({
+            success: true,
+            message: "Profile photo removed successfully",
+            data: result
+        });
+    })
+
 };
 
 module.exports = ProfileController;

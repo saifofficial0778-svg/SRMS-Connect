@@ -29,7 +29,39 @@ const ProfileRepository = {
             [userId]
         );
 
-        return result[0];
+        const profile = result[0];
+
+        if (!profile) {
+            return profile;
+        }
+
+        // NOTE: added so GET /profile can return skills + projects
+        // in a single response for the frontend. No other query changed.
+        const [skills] = await pool.execute(
+            `
+        SELECT id, skill
+        FROM profile_skills
+        WHERE profile_id = ?
+        ORDER BY id ASC
+        `,
+            [profile.id]
+        );
+
+        const [projects] = await pool.execute(
+            `
+        SELECT id, title, description, project_url
+        FROM profile_projects
+        WHERE profile_id = ?
+        ORDER BY id DESC
+        `,
+            [profile.id]
+        );
+
+        return {
+            ...profile,
+            skills,
+            projects
+        };
     },
 
     async updateProfile(userId, profileData) {
@@ -133,7 +165,39 @@ const ProfileRepository = {
         return result.affectedRows;
     },
 
-    
+    async updateProfilePhoto(userId, photoUrl, publicId) {
+        const [result] = await pool.execute(
+            `UPDATE profiles
+             SET profile_photo = ?,
+                 profile_photo_public_id = ?
+             WHERE user_id = ?`,
+            [photoUrl, publicId, userId]
+        );
+
+        return result.affectedRows;
+    },
+
+    async getProfilePhoto(userId) {
+        const [rows] = await pool.execute(
+            `SELECT profile_photo, profile_photo_public_id
+             FROM profiles
+             WHERE user_id = ?`,
+            [userId]
+        );
+
+        return rows[0];
+    },
+
+    async clearProfilePhoto(userId) {
+        const [result] = await pool.execute(
+            `UPDATE profiles
+             SET profile_photo = NULL,
+                 profile_photo_public_id = NULL
+             WHERE user_id = ?`,
+            [userId]
+        );
+        return result.affectedRows;
+    },
 
 };
 

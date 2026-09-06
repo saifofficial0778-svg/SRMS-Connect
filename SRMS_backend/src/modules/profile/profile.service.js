@@ -1,5 +1,7 @@
 const ProfileRepository = require("./profile.repository");
 const AppError = require('../../utils/AppError')
+const uploadToCloudinary = require("../../utils/uploadToCloudinary");
+const deleteFromCloudinary = require("../../utils/deleteFromCloudinary");
 
 const ProfileService = {
 
@@ -89,6 +91,54 @@ const ProfileService = {
         }
 
         return true;
+    },
+
+    async updateProfilePhoto(userId, file) {
+        if (!file) {
+            throw new AppError("Profile photo is required", 400);
+        }
+
+        const oldPhoto = await ProfileRepository.getProfilePhoto(userId);
+
+        const uploadResult = await uploadToCloudinary(
+            file.buffer,
+            "srms-connect/profiles",
+            "image"
+        );
+
+        if (
+            oldPhoto?.profile_photo_public_id
+        ) {
+            await deleteFromCloudinary(
+                oldPhoto.profile_photo_public_id,
+                "image"
+            );
+        }
+
+        await ProfileRepository.updateProfilePhoto(
+            userId,
+            uploadResult.secure_url,
+            uploadResult.public_id
+        );
+
+        return {
+            profilePhoto: uploadResult.secure_url
+        };
+    },
+
+    async deleteProfilePhoto(userId) {
+        const oldPhoto = await ProfileRepository.getProfilePhoto(userId);
+
+        if (!oldPhoto?.profile_photo_public_id) {
+            throw new AppError("No profile photo to remove", 400);
+        }
+
+        await deleteFromCloudinary(oldPhoto.profile_photo_public_id, "image");
+        await ProfileRepository.clearProfilePhoto(userId);
+
+        return {
+            profilePhoto: null
+        };
     },
 
 };
