@@ -1,8 +1,8 @@
 const express = require("express");
 const upload = require("../../middlewares/multerMiddleware");
 const PostController = require("./post.controller");
-const {validate}=require('../../middlewares/validationMiddleware')
-const {createPostSchema,updatePostSchema,addCommentSchema,updateCommentSchema}=require('./post.validation')
+const {validate,validateQuery}=require('../../middlewares/validationMiddleware')
+const {createPostSchema,updatePostSchema,addCommentSchema,updateCommentSchema,feedQuerySchema}=require('./post.validation')
 const verifyToken=require('../../middlewares/authMiddleware')
 
 const router = express.Router();
@@ -22,5 +22,7 @@ router.post("/:postId/comments",verifyToken,validate(addCommentSchema),PostContr
 router.patch("/comments/:commentId",verifyToken,validate(updateCommentSchema),PostController.updateComment);
 
 router.delete("/comments/:commentId",verifyToken,PostController.deleteComment);
+
+router.get("/feed",verifyToken,validateQuery(feedQuerySchema),PostController.getFeed);
 
 module.exports = router;

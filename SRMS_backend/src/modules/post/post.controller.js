@@ -122,6 +122,22 @@ const PostController = {
             message: "Comment deleted successfully"
         });
     }),
+
+    getFeed: catchAsync(async (req, res) => {
+        const userId = req.user.userId;
+        const { page, limit } = req.validatedQuery;
+
+        const result = await PostService.getFeed(
+            userId,
+            page,
+            limit
+        );
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    }),
 };
 
 module.exports = PostController;

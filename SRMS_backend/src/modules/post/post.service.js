@@ -181,6 +181,24 @@ const PostService = {
         return await PostRepository.deleteComment(commentId);
     },
 
+    async getFeed(userId, page, limit) {
+        const offset = (page - 1) * limit;
+
+        const posts = await PostRepository.getFeed(
+            userId,
+            limit,
+            offset
+        );
+
+        return {
+            posts,
+            pagination: {
+                page,
+                limit
+            }
+        };
+    }
+
 };
 
 module.exports = PostService;
