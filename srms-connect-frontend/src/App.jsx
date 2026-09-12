@@ -6,6 +6,7 @@ import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import Profile from "./pages/profile/Profile"; 
+import Chat from './pages/chat/Chat'
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path='/chat' element={<Chat/>}/>
       </Routes>
     </BrowserRouter>
   );
