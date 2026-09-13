@@ -16,16 +16,16 @@ const ConversationService = {
         if (connection.status !== "ACCEPTED") {
             throw new AppError("You can chat only with connections", 403);
         }
-        let newConversation
-        const conversation = await ConversationRepository.findConversation(userOneId, userTwoId)
-        if (!conversation) {
-            newConversation = await ConversationRepository.createConversation(userOneId, userTwoId)
 
-            return newConversation
+        const conversation = await ConversationRepository.findConversation(userOneId, userTwoId);
+
+        if (!conversation) {
+            const newConversationId = await ConversationRepository.createConversation(userOneId, userTwoId);
+            return newConversationId;
         }
 
-        return connection.id
-
+    
+        return conversation.id;
     },
 
     async sendMessage(conversationId, senderId, content) {
@@ -53,9 +53,65 @@ const ConversationService = {
 
         return {
             messageId,
-            receiverId
+            receiverId,
+            createdAt: new Date().toISOString(),
         };
-    }
+    },
+
+    async getConversations(userId) {
+        const rows = await ConversationRepository.findConversationsByUser(userId);
+
+        return rows.map((r) => ({
+            conversationId: r.conversation_id,
+            otherUser: {
+                id: r.other_user_id,
+                full_name: r.full_name,
+                profile_photo: r.profile_photo,
+            },
+            lastMessage: r.last_message_content !== null
+                ? {
+                    content: r.last_message_content,
+                    createdAt: r.last_message_at,
+                    senderId: r.last_message_sender_id,
+                }
+                : null,
+            unreadCount: Number(r.unread_count) || 0,
+        }));
+    },
+
+  
+    async getMessages(userId, conversationId, page, limit) {
+        const conversation = await ConversationRepository.findConversationById(conversationId);
+        if (!conversation) {
+            throw new AppError("Conversation not found", 404);
+        }
+        if (conversation.user_one_id !== userId && conversation.user_two_id !== userId) {
+            throw new AppError("You don't have access to this conversation", 403);
+        }
+
+        const offset = (page - 1) * limit;
+        const rows = await ConversationRepository.findMessagesByConversationId(
+            conversationId,
+            limit,
+            offset
+        );
+
+       
+        return rows.reverse();
+    },
+
+    
+    async markConversationRead(userId, conversationId) {
+        const conversation = await ConversationRepository.findConversationById(conversationId);
+        if (!conversation) {
+            throw new AppError("Conversation not found", 404);
+        }
+        if (conversation.user_one_id !== userId && conversation.user_two_id !== userId) {
+            throw new AppError("You don't have access to this conversation", 403);
+        }
+
+        return await ConversationRepository.markConversationRead(conversationId, userId);
+    },
 
 };
 

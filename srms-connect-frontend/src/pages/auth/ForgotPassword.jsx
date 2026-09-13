@@ -1,90 +1,84 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { forgotPassword } from "../../services/authService";
-import { useNavigate } from "react-router-dom";
+import AuthLayout from "../../components/auth/AuthLayout";
+import AuthInput from "../../components/auth/AuthInput";
+import AuthButton from "../../components/auth/AuthButton";
+import useToast from "../../hooks/useToast";
+import ToastStack from "../../components/ui/Toast";
+import { IdCardIcon, KeyIcon, ShieldIcon } from "../../components/auth/icons";
 
-const ForgotPassword = () => {
-    const [enrollment, setEnrollment] = useState("");
-    const navigate = useNavigate();
+const FEATURES = [
+  { icon: <KeyIcon />, text: "Secure, token-based reset" },
+  { icon: <ShieldIcon />, text: "Your account stays protected" },
+];
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+export default function ForgotPassword() {
+  const [enrollment, setEnrollment] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fieldError, setFieldError] = useState("");
+  const navigate = useNavigate();
+  const { toasts, showToast, dismiss } = useToast();
 
-        try {
-            const data = await forgotPassword({
-                enrollment,
-            });
-            navigate("/reset-password", {
-                state: {
-                    resetToken: data.data,
-                },
-            });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (loading) return;
 
-            console.log("Forgot Password Success:", data);
-        } catch (error) {
-            console.log(
-                "Forgot Password Error:",
-                error.response?.data || error.message
-            );
-        }
-    };
+    if (!enrollment.trim()) {
+      setFieldError("Enter your enrollment number first.");
+      return;
+    }
+    setFieldError("");
+    setLoading(true);
+    try {
+      const data = await forgotPassword({ enrollment: enrollment.trim() });
+      showToast("Reset token generated. Taking you to the next step...");
+      // brief pause so the success message is actually visible before navigating
+      setTimeout(() => {
+        navigate("/reset-password", { state: { resetToken: data.data } });
+      }, 700);
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        "We couldn't find that enrollment number. Please check and try again.";
+      setFieldError(message);
+      showToast(message, "error");
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+  return (
+    <AuthLayout
+      heading="Forgot your password?"
+      tagline="No worries — enter your enrollment number and we'll get you a reset token in seconds."
+      features={FEATURES}
+      cardTitle="Forgot password?"
+      cardSubtitle="Enter your enrollment number to reset your password."
+    >
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <AuthInput
+          label="Enrollment Number"
+          icon={<IdCardIcon />}
+          placeholder="Enter enrollment number"
+          value={enrollment}
+          onChange={(e) => setEnrollment(e.target.value)}
+          autoComplete="username"
+          error={fieldError}
+        />
 
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">
-                        Forgot Password?
-                    </h1>
+        <AuthButton type="submit" loading={loading} loadingText="Sending...">
+          Send Reset Link
+        </AuthButton>
+      </form>
 
-                    <p className="text-gray-500 mt-2">
-                        Enter your enrollment number to reset your password.
-                    </p>
-                </div>
+      <p className="text-center text-sm text-[#1B2438]/60 mt-6">
+        Remember your password?{" "}
+        <Link to="/login" className="text-[#C98A2B] hover:text-[#B37A22] font-medium">
+          Back to Login
+        </Link>
+      </p>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-5">
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Enrollment Number
-                        </label>
-
-                        <input
-                            type="text"
-                            placeholder="Enter enrollment number"
-                            value={enrollment}
-                            onChange={(e) => setEnrollment(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg
-                         focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="w-full bg-blue-600 text-white py-3 rounded-lg
-                       font-semibold hover:bg-blue-700 transition"
-                    >
-                        Send Reset Link
-                    </button>
-
-                </form>
-
-                {/* Back to Login */}
-                <p className="text-center text-sm text-gray-500 mt-6">
-                    Remember your password?{" "}
-                    <a
-                        href="/login"
-                        className="text-blue-600 hover:underline font-medium"
-                    >
-                        Back to Login
-                    </a>
-                </p>
-
-            </div>
-        </div>
-    );
-};
-
-export default ForgotPassword;
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
+    </AuthLayout>
+  );
+}

@@ -65,6 +65,7 @@ export default function ChangePhotoModal({ currentPhoto, fullName, onClose, onSu
     try {
       await onSubmit(file);
     } catch (err) {
+      console.error("Photo upload failed:", err); // TEMP DEBUG — remove later
       setError(err?.response?.data?.message || "Couldn't upload your photo.");
       setSubmitting(false);
     }

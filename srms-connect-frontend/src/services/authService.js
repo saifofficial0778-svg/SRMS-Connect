@@ -19,4 +19,3 @@ export const resetPassword=async(credentials)=>{
   const response=await authApi.post("/auth/reset-password",credentials)
   return response.data
 }
-

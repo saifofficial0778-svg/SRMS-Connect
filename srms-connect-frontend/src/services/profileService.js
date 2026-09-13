@@ -18,9 +18,11 @@ export const updateProfile = async (profileData) => {
 export const updateProfilePhoto = async (file) => {
     const formData = new FormData();
     formData.append("photo", file);
-    const response = await authApi.patch("/profile/photo", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-    });
+    // Do NOT set Content-Type manually — axios/the browser must generate it
+    // themselves so it includes the multipart boundary. A hardcoded
+    // "multipart/form-data" header (without boundary) makes multer fail to
+    // parse the body, so req.file ends up undefined on the backend.
+    const response = await authApi.patch("/profile/photo", formData);
     return response.data;
 };
 
@@ -56,5 +58,10 @@ export const addProject = async (projectData) => {
 // Delete Project
 export const deleteProject = async (projectId) => {
     const response = await authApi.delete(`/profile/projects/${projectId}`);
+    return response.data;
+};
+
+export const getPublicProfileById = async (userId) => {
+    const response = await authApi.get(`/profile/${userId}`);
     return response.data;
 };

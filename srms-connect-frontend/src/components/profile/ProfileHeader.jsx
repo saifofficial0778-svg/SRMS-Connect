@@ -1,10 +1,21 @@
 import { useState } from "react";
 import Avatar from "./Avatar";
 import ChangePhotoModal from "./ChangePhotoModal";
+import PhotoMenu from "./PhotoMenu";
+import ConfirmDialog from "../ui/ConfirmDialog";
 import { BuildingIcon, LocationIcon } from "./icons";
 
-export default function ProfileHeader({ profile, onEditClick, onPhotoSave }) {
-  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+export default function ProfileHeader({
+  profile,
+  onEditClick,
+  onPhotoUpload,
+  onPhotoRemove,
+  showToast,
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [changeModalOpen, setChangeModalOpen] = useState(false);
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [removing, setRemoving] = useState(false);
 
   const {
     full_name,
@@ -15,9 +26,24 @@ export default function ProfileHeader({ profile, onEditClick, onPhotoSave }) {
     bio,
   } = profile;
 
-  const handlePhotoSubmit = async (url) => {
-    await onPhotoSave(url);
-    setPhotoModalOpen(false);
+  const handlePhotoSubmit = async (file) => {
+    await onPhotoUpload(file);
+    setChangeModalOpen(false);
+  };
+
+  const handleConfirmRemove = async () => {
+    setRemoving(true);
+    try {
+      await onPhotoRemove();
+      setConfirmRemoveOpen(false);
+    } catch (err) {
+      showToast?.(
+        err?.response?.data?.message || "Couldn't remove photo.",
+        "error"
+      );
+    } finally {
+      setRemoving(false);
+    }
   };
 
   return (
@@ -73,13 +99,27 @@ export default function ProfileHeader({ profile, onEditClick, onPhotoSave }) {
           {/* negative margin lives on this flex ITEM, not the row itself —
               margins never collapse on flex items, so this can't get
               swallowed into the parent and hide the row below it */}
-          <div className="-mt-12 sm:-mt-14 shrink-0">
+          <div className="-mt-12 sm:-mt-14 shrink-0 relative">
             <Avatar
               photoUrl={profile_photo}
               fullName={full_name}
               size={112}
-              onEditClick={() => setPhotoModalOpen(true)}
+              onEditClick={() => setMenuOpen((v) => !v)}
             />
+            {menuOpen && (
+              <PhotoMenu
+                hasPhoto={Boolean(profile_photo)}
+                onChangeClick={() => {
+                  setMenuOpen(false);
+                  setChangeModalOpen(true);
+                }}
+                onRemoveClick={() => {
+                  setMenuOpen(false);
+                  setConfirmRemoveOpen(true);
+                }}
+                onClose={() => setMenuOpen(false)}
+              />
+            )}
           </div>
 
           <div className="flex-1 min-w-0 pt-2 sm:pt-0 sm:pb-1">
@@ -120,14 +160,24 @@ export default function ProfileHeader({ profile, onEditClick, onPhotoSave }) {
         )}
       </div>
 
-      {photoModalOpen && (
+      {changeModalOpen && (
         <ChangePhotoModal
           currentPhoto={profile_photo}
           fullName={full_name}
-          onClose={() => setPhotoModalOpen(false)}
+          onClose={() => setChangeModalOpen(false)}
           onSubmit={handlePhotoSubmit}
         />
       )}
+
+      <ConfirmDialog
+        open={confirmRemoveOpen}
+        title="Remove profile photo?"
+        description="Your current photo will be deleted. You can upload a new one anytime."
+        confirmLabel="Remove"
+        busy={removing}
+        onConfirm={handleConfirmRemove}
+        onCancel={() => setConfirmRemoveOpen(false)}
+      />
     </section>
   );
 }

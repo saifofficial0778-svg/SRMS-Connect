@@ -1,4 +1,3 @@
-const { success } = require("zod");
 const catchAsync = require("../../utils/catchAsync");
 const PostService = require('./post.service')
 
@@ -86,6 +85,18 @@ const PostController = {
         return res.status(201).json({
             success: true,
             message: "Comment added successfully",
+            data: result
+        });
+    }),
+
+    // NEW
+    getComments: catchAsync(async (req, res) => {
+        const { postId } = req.params;
+
+        const result = await PostService.getComments(postId);
+
+        return res.status(200).json({
+            success: true,
             data: result
         });
     }),

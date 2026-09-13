@@ -105,7 +105,19 @@ const ProfileController = {
             message: "Profile photo removed successfully",
             data: result
         });
-    })
+    }),
+
+        getPublicProfile: catchAsync(async (req, res) => {
+        const { userId } = req.params;
+
+        const profile = await ProfileService.getPublicProfile(userId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile fetched successfully",
+            data: profile
+        });
+    }),
 
 };
 

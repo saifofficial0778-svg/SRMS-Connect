@@ -13,7 +13,7 @@ function getColor(fullName) {
   return PALETTE[seed % PALETTE.length];
 }
 
-export default function Avatar({ photoUrl, fullName, size = 128, onEditClick }) {
+export default function Avatar({ photoUrl, fullName, size = 128, onEditClick, online }) {
   const dimension = { width: size, height: size };
 
   const image = photoUrl ? (
@@ -44,15 +44,26 @@ export default function Avatar({ photoUrl, fullName, size = 128, onEditClick }) 
     </div>
   );
 
-  // No onEditClick passed (e.g. used inside ChangePhotoModal's preview) —
-  // just show the plain photo/initials, not clickable.
+  // NEW: small green dot for online status (used in Messaging). Optional —
+  // omit the `online` prop anywhere else and nothing changes.
+  const onlineDot = online && (
+    <span
+      className="absolute bottom-0 right-0 rounded-full bg-[#3F6B52] ring-2 ring-white"
+      style={{ width: size * 0.26, height: size * 0.26 }}
+    />
+  );
+
+  // No onEditClick passed (e.g. used inside ChangePhotoModal's preview,
+  // or in Messaging/Feed where photo isn't editable) — just show the
+  // plain photo/initials, optionally with the online dot, not clickable.
   if (!onEditClick) {
     return (
       <div
         style={dimension}
-        className="transition-transform duration-200 hover:scale-[1.03]"
+        className="relative transition-transform duration-200 hover:scale-[1.03]"
       >
         {image}
+        {onlineDot}
       </div>
     );
   }
@@ -66,6 +77,7 @@ export default function Avatar({ photoUrl, fullName, size = 128, onEditClick }) 
       aria-label="Change profile photo"
     >
       {image}
+      {onlineDot}
       <span className="absolute inset-0 rounded-full bg-[#1B2438]/0 group-hover:bg-[#1B2438]/40 transition-colors flex items-center justify-center">
         <span className="opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-medium">
           Change

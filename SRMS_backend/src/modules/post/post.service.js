@@ -144,6 +144,15 @@ const PostService = {
         );
     },
 
+    // NEW
+    async getComments(postId) {
+        const post = await PostRepository.findPostById(postId);
+        if (!post) {
+            throw new AppError("Post not found", 404);
+        }
+        return await PostRepository.findCommentsByPostId(postId);
+    },
+
     async updateComment(userId, commentId, content) {
         const comment = await PostRepository.findCommentById(commentId);
 

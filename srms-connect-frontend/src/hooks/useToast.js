@@ -1,10 +1,5 @@
 import { useCallback, useRef, useState } from "react";
 
-/**
- * Minimal in-page toast queue. No provider/context needed —
- * import this inside any page that wants toasts and render
- * <ToastStack toasts={toasts} /> from components/ui/Toast.jsx.
- */
 export default function useToast() {
   const [toasts, setToasts] = useState([]);
   const idRef = useRef(0);

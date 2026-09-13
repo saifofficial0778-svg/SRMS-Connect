@@ -7,6 +7,8 @@ const verifyToken=require('../../middlewares/authMiddleware')
 
 const router = express.Router();
 
+router.get("/feed",verifyToken,validateQuery(feedQuerySchema),PostController.getFeed);
+
 router.post("/",verifyToken,upload.array("media", 5),validate(createPostSchema),PostController.createPost);
 
 router.patch("/:postId",verifyToken,validate(updatePostSchema),PostController.updatePost);
@@ -17,12 +19,12 @@ router.post("/:postId/like",verifyToken,PostController.likePost);
 
 router.delete("/:postId/like",verifyToken,PostController.unlikePost);
 
+router.get("/:postId/comments",verifyToken,PostController.getComments);
+
 router.post("/:postId/comments",verifyToken,validate(addCommentSchema),PostController.addComment);
 
 router.patch("/comments/:commentId",verifyToken,validate(updateCommentSchema),PostController.updateComment);
 
 router.delete("/comments/:commentId",verifyToken,PostController.deleteComment);
-
-router.get("/feed",verifyToken,validateQuery(feedQuerySchema),PostController.getFeed);
 
 module.exports = router;

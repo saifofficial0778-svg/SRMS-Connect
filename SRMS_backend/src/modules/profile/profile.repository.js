@@ -199,6 +199,32 @@ const ProfileRepository = {
         return result.affectedRows;
     },
 
+    async findPublicProfileById(userId) {
+        const [result] = await pool.execute(
+            `
+        SELECT
+            id,
+            user_id,
+            full_name,
+            profile_photo,
+            bio,
+            location,
+            linkedin_url,
+            github_url,
+            portfolio_url,
+            company,
+            designation,
+            experience_years
+        FROM profiles
+        WHERE user_id = ?
+        LIMIT 1
+        `,
+            [userId]
+        );
+
+        return result[0];
+    },
+
 };
 
 module.exports = ProfileRepository;

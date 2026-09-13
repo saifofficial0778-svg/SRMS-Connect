@@ -74,6 +74,34 @@ const PostRepository = {
         return result
     },
 
+    // NEW: batch-fetches media for every post in one query, keyed by post_id,
+    // so getFeed can attach `media: [...]` to each feed row without an N+1.
+    async findMediaForPosts(postIds) {
+        if (!postIds.length) return {};
+
+        const placeholders = postIds.map(() => "?").join(",");
+        const [rows] = await pool.execute(
+            `
+            SELECT id, post_id, media_url, media_type, public_id
+            FROM post_media
+            WHERE post_id IN (${placeholders})
+            ORDER BY id ASC
+            `,
+            postIds
+        );
+
+        const byPost = {};
+        for (const row of rows) {
+            if (!byPost[row.post_id]) byPost[row.post_id] = [];
+            byPost[row.post_id].push({
+                id: row.id,
+                url: row.media_url,
+                type: row.media_type,
+            });
+        }
+        return byPost;
+    },
+
     async updatePost(connection, postId) {
         const [result] = await connection.execute(
             `
@@ -173,6 +201,29 @@ const PostRepository = {
         );
 
         return result[0];
+    },
+
+    // NEW: lists comments for a post, joined with the commenter's profile
+    // so the frontend can render name/photo without extra round-trips.
+    async findCommentsByPostId(postId) {
+        const [rows] = await pool.execute(
+            `
+            SELECT
+                pc.id,
+                pc.post_id,
+                pc.user_id,
+                pc.content,
+                pc.created_at,
+                pr.full_name,
+                pr.profile_photo
+            FROM post_comments pc
+            JOIN profiles pr ON pr.user_id = pc.user_id
+            WHERE pc.post_id = ?
+            ORDER BY pc.created_at ASC
+            `,
+            [postId]
+        );
+        return rows;
     },
 
     async updateComment(commentId, content) {
@@ -276,7 +327,13 @@ const PostRepository = {
             [userId, userId, userId]
         );
 
-        return rows;
+        
+        const postIds = rows.map((r) => r.id);
+        const mediaByPost = await PostRepository.findMediaForPosts(postIds);
+        return rows.map((row) => ({
+            ...row,
+            media: mediaByPost[row.id] || [],
+        }));
     },
 };
 

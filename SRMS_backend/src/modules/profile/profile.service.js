@@ -141,6 +141,16 @@ const ProfileService = {
         };
     },
 
+        async getPublicProfile(userId) {
+        const profile = await ProfileRepository.findPublicProfileById(userId);
+
+        if (!profile) {
+            throw new AppError("Profile not found", 404);
+        }
+
+        return profile;
+    },
+
 };
 
 module.exports = ProfileService;

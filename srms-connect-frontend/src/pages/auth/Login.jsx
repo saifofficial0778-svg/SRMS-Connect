@@ -1,114 +1,102 @@
-import React from "react";
 import { useState } from "react";
-import { loginUser } from "../../services/authService"; // Adjust the import path as needed
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { loginUser } from "../../services/authService";
+import AuthLayout from "../../components/auth/AuthLayout";
+import AuthInput from "../../components/auth/AuthInput";
+import PasswordInput from "../../components/auth/PasswordInput";
+import AuthButton from "../../components/auth/AuthButton";
+import useToast from "../../hooks/useToast";
+import ToastStack from "../../components/ui/Toast";
+import { IdCardIcon, UsersIcon, CompassIcon, CheckIcon } from "../../components/auth/icons";
 
-const Login = () => {
+const FEATURES = [
+  { icon: <UsersIcon />, text: "Connect with your college community" },
+  { icon: <CompassIcon />, text: "Discover alumni across batches" },
+  { icon: <CheckIcon />, text: "Build your professional network" },
+];
+
+export default function Login() {
   const [enrollment, setEnrollment] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fieldError, setFieldError] = useState("");
   const navigate = useNavigate();
+  const { toasts, showToast, dismiss } = useToast();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (loading) return;
 
+    if (!enrollment.trim() || !password) {
+      setFieldError("Please fill in both fields.");
+      return;
+    }
+    setFieldError("");
+    setLoading(true);
     try {
-      const data = await loginUser({
-        enrollment,
-        password,
-      });
-
+      const data = await loginUser({ enrollment: enrollment.trim(), password });
       localStorage.setItem("token", data.data.token);
       localStorage.setItem("userId", data.data.userId);
-
-      console.log("Login Success:", data);
-      navigate("/home"); 
+      navigate("/home");
     } catch (error) {
-      console.log("Login Error:", error.response?.data || error.message);
+      const message =
+        error.response?.data?.message || "Invalid enrollment number or password.";
+      setFieldError(message);
+      showToast(message, "error");
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <AuthLayout
+      heading="Your college network starts here."
+      tagline="One place to connect with classmates, seniors, and alumni from SRMS."
+      features={FEATURES}
+      cardTitle="Welcome back"
+      cardSubtitle="Log in to continue to SRMS Connect"
+    >
+      <form onSubmit={handleLogin} className="space-y-4" noValidate>
+        <AuthInput
+          label="Enrollment Number"
+          icon={<IdCardIcon />}
+          placeholder="Enter your enrollment number"
+          value={enrollment}
+          onChange={(e) => setEnrollment(e.target.value)}
+          autoComplete="username"
+        />
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            SRMS Connect
-          </h1>
+        <PasswordInput
+          label="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter your password"
+          autoComplete="current-password"
+        />
 
-          <p className="text-gray-500 mt-2">
-            Connect with your college community
-          </p>
+        {fieldError && <p className="text-xs text-[#B3432B] -mt-1">{fieldError}</p>}
+
+        <div className="flex justify-end">
+          <Link
+            to="/forgot-password"
+            className="text-sm text-[#C98A2B] hover:text-[#B37A22] font-medium"
+          >
+            Forgot password?
+          </Link>
         </div>
 
-        {/* Login Form */}
-        <form className="space-y-5" onSubmit={handleLogin}>
+        <AuthButton type="submit" loading={loading} loadingText="Logging in...">
+          Login
+        </AuthButton>
+      </form>
 
-          {/* Enrollment */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Enrollment Number
-            </label>
+      <p className="text-center text-sm text-[#1B2438]/60 mt-6">
+        New to SRMS Connect?{" "}
+        <Link to="/register" className="text-[#C98A2B] hover:text-[#B37A22] font-medium">
+          Create an account
+        </Link>
+      </p>
 
-            <input
-              type="text"
-              placeholder="Enter your enrollment number"
-              value={enrollment}
-              onChange={(e) => setEnrollment(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         focus:border-transparent"
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         focus:border-transparent"
-            />
-          </div>
-
-          {/* Login Button */}
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-lg 
-                       font-semibold hover:bg-blue-700 transition"
-          >
-            Login
-          </button>
-        </form>
-
-        {/* Links */}
-        <div className="flex justify-between mt-6 text-sm">
-          <a
-            href="/forgot-password"
-            className="text-blue-600 hover:underline"
-          >
-            Forgot Password?
-          </a>
-
-          <a
-            href="/register"
-            className="text-blue-600 hover:underline"
-          >
-            Create Account
-          </a>
-        </div>
-
-      </div>
-    </div>
+      <ToastStack toasts={toasts} onDismiss={dismiss} />
+    </AuthLayout>
   );
-};
-
-export default Login;
+}

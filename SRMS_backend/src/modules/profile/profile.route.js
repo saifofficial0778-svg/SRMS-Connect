@@ -23,4 +23,6 @@ router.post('/projects',verifyToken,validate(addProjectSchema),ProfileController
 
 router.delete('/projects/:projectId',verifyToken,ProfileController.deleteProject)
 
+router.get("/:userId", verifyToken, ProfileController.getPublicProfile);
+
 module.exports = router;
