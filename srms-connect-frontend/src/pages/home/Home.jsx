@@ -1,7 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getFeed } from "../../services/postService";
 import { getProfile } from "../../services/profileService";
+import {
+  getMyConnections,
+  getReceivedRequests,
+  getSentRequests,
+  sendConnectionRequest,
+  acceptConnectionRequest,
+  rejectConnectionRequest,
+  cancelConnectionRequest,
+  removeConnection,
+} from "../../services/connectionService";
+import { getOrCreateConversation } from "../../services/chatService";
 import useToast from "../../hooks/useToast";
 import ToastStack from "../../components/ui/Toast";
 import Avatar from "../../components/profile/Avatar";
@@ -21,6 +32,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  // connectionMap: { [otherUserId]: { status: "none"|"sent"|"received"|"connected", connectionId } }
+  const [connectionMap, setConnectionMap] = useState({});
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
@@ -32,15 +46,19 @@ export default function Home() {
 
     (async () => {
       try {
-        const [profileRes, feedRes] = await Promise.all([
+        const [profileRes, feedRes, connRes, recvRes, sentRes] = await Promise.all([
           getProfile(),
           getFeed(1, PAGE_LIMIT),
+          getMyConnections(),
+          getReceivedRequests(),
+          getSentRequests(),
         ]);
         if (cancelled) return;
 
         const profile = profileRes?.data || {};
+        const myId = profile.user_id ?? Number(localStorage.getItem("userId"));
         setCurrentUser({
-          id: profile.user_id ?? Number(localStorage.getItem("userId")),
+          id: myId,
           full_name: profile.full_name,
           profile_photo: profile.profile_photo,
         });
@@ -48,6 +66,19 @@ export default function Home() {
         const feedPosts = feedRes?.data?.posts || [];
         setPosts(feedPosts);
         setHasMore(feedPosts.length === PAGE_LIMIT);
+
+        const otherIdOf = (row) => (row.sender_id === myId ? row.receiver_id : row.sender_id);
+        const map = {};
+        (connRes?.data || []).forEach((row) => {
+          map[otherIdOf(row)] = { status: "connected", connectionId: row.id };
+        });
+        (recvRes?.data || []).forEach((row) => {
+          map[row.sender_id] = { status: "received", connectionId: row.id };
+        });
+        (sentRes?.data || []).forEach((row) => {
+          map[row.receiver_id] = { status: "sent", connectionId: row.id };
+        });
+        setConnectionMap(map);
       } catch (err) {
         if (!cancelled) showToast("Couldn't load your feed.", "error");
       } finally {
@@ -86,9 +117,68 @@ export default function Home() {
     showToast("Post deleted.");
   };
 
+  // ---- connection actions, shared by every PostCard via connectionMap ----
+
+  const handleConnect = async (targetUserId) => {
+    try {
+      const res = await sendConnectionRequest(targetUserId);
+      setConnectionMap((prev) => ({
+        ...prev,
+        [targetUserId]: { status: "sent", connectionId: res?.data },
+      }));
+    } catch (err) {
+      showToast(err?.response?.data?.message || "Couldn't send request.", "error");
+    }
+  };
+
+  const handleCancel = async (targetUserId, connectionId) => {
+    try {
+      await cancelConnectionRequest(connectionId);
+      setConnectionMap((prev) => ({ ...prev, [targetUserId]: { status: "none", connectionId: null } }));
+    } catch (err) {
+      showToast(err?.response?.data?.message || "Couldn't cancel request.", "error");
+    }
+  };
+
+  const handleAccept = async (targetUserId, connectionId) => {
+    try {
+      await acceptConnectionRequest(connectionId);
+      setConnectionMap((prev) => ({ ...prev, [targetUserId]: { status: "connected", connectionId } }));
+    } catch (err) {
+      showToast(err?.response?.data?.message || "Couldn't accept request.", "error");
+    }
+  };
+
+  const handleReject = async (targetUserId, connectionId) => {
+    try {
+      await rejectConnectionRequest(connectionId);
+      setConnectionMap((prev) => ({ ...prev, [targetUserId]: { status: "none", connectionId: null } }));
+    } catch (err) {
+      showToast(err?.response?.data?.message || "Couldn't reject request.", "error");
+    }
+  };
+
+  const handleRemove = async (targetUserId, connectionId) => {
+    try {
+      await removeConnection(connectionId);
+      setConnectionMap((prev) => ({ ...prev, [targetUserId]: { status: "none", connectionId: null } }));
+    } catch (err) {
+      showToast(err?.response?.data?.message || "Couldn't remove connection.", "error");
+    }
+  };
+
+  const handleMessage = async (targetUserId) => {
+    try {
+      const res = await getOrCreateConversation(targetUserId);
+      const conversationId = res?.data?.id || res?.data?._id || res?.data?.conversationId;
+      navigate("/chat", { state: { conversationId, userId: targetUserId } });
+    } catch (err) {
+      showToast(err?.response?.data?.message || "Couldn't open chat.", "error");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F5F6F8]">
-      {/* Navbar — same record-card identity as the rest of the app */}
       <nav className="bg-[#1B2438] sticky top-0 z-30">
         <div className="max-w-2xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <h1
@@ -144,6 +234,13 @@ export default function Home() {
               currentUser={currentUser}
               showToast={showToast}
               onDeleted={handlePostDeleted}
+              connectionInfo={connectionMap[post.user_id] || { status: "none", connectionId: null }}
+              onConnect={() => handleConnect(post.user_id)}
+              onCancel={() => handleCancel(post.user_id, connectionMap[post.user_id]?.connectionId)}
+              onAccept={() => handleAccept(post.user_id, connectionMap[post.user_id]?.connectionId)}
+              onReject={() => handleReject(post.user_id, connectionMap[post.user_id]?.connectionId)}
+              onRemove={() => handleRemove(post.user_id, connectionMap[post.user_id]?.connectionId)}
+              onMessage={() => handleMessage(post.user_id)}
             />
           ))}
 
