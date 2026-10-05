@@ -9,6 +9,7 @@ const UserRepository = {
             SELECT 
                 id,
                 enrollment,
+                email,
                 role,
                 status,
                 last_login,
@@ -90,20 +91,23 @@ const UserRepository = {
         return result[0]
     },
 
-    async updateUserStatus(id,status) {
-        const [result]=await pool.execute(
+    async updateUserStatus(id, status, adminId, reason = null) {
+        const [result] = await pool.execute(
             `
-            UPDATE users
-            SET 
-                status=?
-            WHERE
-                id=?
-            `,[status,id]
-        )
-        result.affectedRows
+        UPDATE users
+        SET 
+            status = ?,
+            verified_by = ?,
+            verified_at = NOW(),
+            rejection_reason = ?
+        WHERE id = ?
+        `,
+            [status, adminId, reason, id]
+        );
+        return result.affectedRows;
     },
 
-    
+
 
 };
 

@@ -1,5 +1,5 @@
-const UserService=require('./userManagement.service')
-const catchAsync=require('../../utils/catchAsync');
+const UserService = require('./userManagement.service')
+const catchAsync = require('../../utils/catchAsync');
 const { success } = require('zod');
 const { updateUserStatus } = require('./userManagement.repository');
 
@@ -21,31 +21,31 @@ const UserController = {
         });
     }),
 
-    getUserById:catchAsync(async (req,res)=>{
-        const {id}=req.params
+    getUserById: catchAsync(async (req, res) => {
+        const { id } = req.params
 
-        const result=await UserService.getUserById(id)
+        const result = await UserService.getUserById(id)
 
         return res.status(200).json({
-            success:true,
+            success: true,
             message: "User fetched successfully",
-            data:result
+            data: result
         })
 
     }),
 
-    updateUserStatus:catchAsync(async(req,res)=>{
-        const {id}=req.params
-        const {status}=req.body
+    updateUserStatus: catchAsync(async (req, res) => {
+        const { id } = req.params
+        const { status, reason } = req.body
+        const adminId = req.user.userId   // tumhare verifyToken middleware se aana chahiye, check karlena field name
 
-        const result=await UserService.updateUserStatus(id,status)
+        const result = await UserService.updateUserStatus(id, status, adminId, reason)
 
         return res.status(200).json({
-            success:true,
+            success: true,
             message: "status updated successfully",
-            data:result
+            data: result
         })
-        
     })
 
 };

@@ -39,7 +39,7 @@ const UserService = {
         return user
     },
 
-    async updateUserStatus(id, status) {
+    async updateUserStatus(id, status, adminId, reason) {
         const user = await userRepository.findUserById(id)
         if (!user) {
             throw new AppError("user not found", 404)
@@ -48,14 +48,22 @@ const UserService = {
             throw new AppError("User already has this status", 400);
         }
 
-        if (
-            (user.status === "ACTIVE" && status !== "BLOCKED") ||
-            (user.status === "BLOCKED" && status !== "ACTIVE")
-        ) {
-            throw new AppError("Invalid status transition", 400);
+        const allowedTransitions = {
+            PENDING: ["ACTIVE", "REJECTED"],
+            ACTIVE: ["BLOCKED"],
+            BLOCKED: ["ACTIVE"],
+            REJECTED: []
+        };
+
+        if (!allowedTransitions[user.status]?.includes(status)) {
+            throw new AppError(`Cannot change status from ${user.status} to ${status}`, 400);
         }
 
-        const result = await userRepository.updateUserStatus(id, status)
+        if (status === "REJECTED" && !reason) {
+            throw new AppError("Rejection reason is required", 400);
+        }
+
+        const result = await userRepository.updateUserStatus(id, status, adminId, reason)
 
         return result
     }

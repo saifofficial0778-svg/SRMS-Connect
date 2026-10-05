@@ -5,8 +5,7 @@ const AuthRepository = {
     async findStudentByEnrollmentAndDob(enrollment, dob) {
         const [result] = await pool.execute(
             `
-        SELECT enrollment,
-        full_name
+        SELECT *
         FROM student_master
         WHERE enrollment = ?
         AND dob = ?
@@ -21,8 +20,7 @@ const AuthRepository = {
     async findAlumniByEnrollmentAndDob(enrollment, dob) {
         const [result] = await pool.execute(
             `
-        SELECT enrollment,
-        full_name
+        SELECT *
         FROM alumni_master
         WHERE enrollment = ?
         AND dob = ?
@@ -37,43 +35,27 @@ const AuthRepository = {
     async findUserByEnrollment(enrollment) {
         const [result] = await pool.execute(
             `
-        SELECT enrollment
+        SELECT id, enrollment, email, email_verified, role, status
         FROM users
         WHERE enrollment = ?
         LIMIT 1
         `,
             [enrollment]
         );
-
         return result[0];
     },
 
-    async createUser(connection,userData) {
-        const {
-            enrollment,
-            passwordHash,
-            role,
-            status
-        } = userData;
-
+    async createUser(connection, userData) {
+        const { enrollment, email, passwordHash, role, status } = userData;
         const [result] = await connection.execute(
-            `
-        INSERT INTO users (
-            enrollment,
-            password_hash,
-            role,
-            status
-        )
-        VALUES (?, ?, ?, ?)
-        `,
-            [enrollment, passwordHash, role, status]
+            `INSERT INTO users (enrollment, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?)`,
+            [enrollment, email, passwordHash, role, status]
         );
-
         return result.insertId;
     },
 
-    async createProfile(connection,profileData){
-        const {userId,fullName}=profileData
+    async createProfile(connection, profileData) {
+        const { userId, fullName } = profileData
 
         const [result] = await connection.execute(
             `
@@ -83,7 +65,7 @@ const AuthRepository = {
         )
         VALUES (?, ?)
         `,
-            [userId,fullName]
+            [userId, fullName]
         );
 
         return result.insertId;
@@ -171,27 +153,90 @@ const AuthRepository = {
         return result[0]
     },
 
-    async updateUserPassword(connection, userId, passwordHash){
-        const [result]=await connection.execute(
+    async updateUserPassword(connection, userId, passwordHash) {
+        const [result] = await connection.execute(
             `
             UPDATE users
             SET
             password_hash=?
             WHERE id=?
-            `,[passwordHash,userId]
+            `, [passwordHash, userId]
         )
         return result.affectedRows
     },
-    async markResetTokenUsed(connection, resetId){
-        const [result]=await connection.execute(
+    async markResetTokenUsed(connection, resetId) {
+        const [result] = await connection.execute(
             `
             UPDATE password_resets
             SET
             used_at=CURRENT_TIMESTAMP
             WHERE id=?
-            `,[resetId]
+            `, [resetId]
         )
         return result.affectedRows
+    },
+
+    async findUserByEnrollmentForOtp(enrollment) {
+        const [result] = await pool.execute(
+            `SELECT id, enrollment, email, role, status FROM users WHERE enrollment = ?`,
+            [enrollment]
+        );
+        return result[0];
+    },
+
+    async createOtp(connection, { userId, otpHash, purpose, expiresAt }) {
+        const [result] = await connection.execute(
+            `
+        INSERT INTO otp_verifications (user_id, otp_hash, purpose, expires_at)
+        VALUES (?, ?, ?, ?)
+        `,
+            [userId, otpHash, purpose, expiresAt]
+        );
+        return result.insertId;
+    },
+
+    async invalidatePreviousOtps(connection, userId, purpose) {
+        await connection.execute(
+            `
+        UPDATE otp_verifications
+        SET is_used = 1
+        WHERE user_id = ? AND purpose = ? AND is_used = 0
+        `,
+            [userId, purpose]
+        );
+    },
+
+    async findLatestValidOtp(userId, purpose) {
+        const [result] = await pool.execute(
+            `
+        SELECT * FROM otp_verifications
+        WHERE user_id = ? AND purpose = ? AND is_used = 0 AND expires_at > NOW()
+        ORDER BY created_at DESC
+        LIMIT 1
+        `,
+            [userId, purpose]
+        );
+        return result[0];
+    },
+
+    async incrementOtpAttempts(otpId) {
+        await pool.execute(
+            `UPDATE otp_verifications SET attempts = attempts + 1 WHERE id = ?`,
+            [otpId]
+        );
+    },
+
+    async markOtpUsed(connection, otpId) {
+        await connection.execute(
+            `UPDATE otp_verifications SET is_used = 1 WHERE id = ?`,
+            [otpId]
+        );
+    },
+    async markEmailVerified(connection, userId) {
+        await connection.execute(
+            `UPDATE users SET email_verified = 1 WHERE id = ?`,
+            [userId]
+        );
     }
 
 };
