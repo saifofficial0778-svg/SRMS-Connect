@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../../services/authService";
 import Avatar from "../profile/Avatar";
 import { UserIcon, SettingsIcon, LogoutIcon, ChevronDownIcon } from "./navIcons";
 
@@ -23,9 +24,8 @@ export default function ProfileMenu({ user }) {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
+  const handleLogout = async () => {
+    await logoutUser();
     navigate("/login");
   };
 

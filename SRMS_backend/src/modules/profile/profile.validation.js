@@ -1,4 +1,5 @@
 const { z } = require("zod");
+const { OPEN_TO_INTENTS } = require("./profile.constants");
 
 const updateProfileSchema = z.object({
     full_name: z.string().trim().min(2).max(100).optional(),
@@ -26,8 +27,17 @@ const addProjectSchema = z.object({
     project_url: z.string().url().max(500).optional()
 });
 
+// the full list of intents replaces whatever was saved before (empty list = "not open to anything")
+const updateOpenToSchema = z.object({
+    intents: z
+        .array(z.enum(OPEN_TO_INTENTS))
+        .max(OPEN_TO_INTENTS.length)
+        .refine((list) => new Set(list).size === list.length, { message: "Duplicate options" })
+}).strict();
+
 module.exports = {
     updateProfileSchema,
+    updateOpenToSchema,
     addSkillSchema,
     addProjectSchema
 };

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { searchAll } from "../../services/searchService";
+import { createDebouncedSearcher } from "../../services/searchFlow";
 import SearchResults from "./SearchResults";
 import { SearchIcon, CloseIcon } from "./navIcons";
 
@@ -8,38 +9,24 @@ const DEBOUNCE_MS = 350;
 export default function SearchBar({ autoFocus = false, onClose, className = "" }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [state, setState] = useState({ status: "idle", results: null });
   const wrapperRef = useRef(null);
-  const debounceRef = useRef(null);
+  const searcherRef = useRef(null);
 
-  // Debounced search — waits for the user to stop typing before calling
-  // the backend, instead of firing a request on every keystroke.
+  // Debounce, minimum length and stale-response handling live in searchFlow.js
+  // (unit tested); this component only renders whatever state it reports.
   useEffect(() => {
-    clearTimeout(debounceRef.current);
-    if (!query.trim()) {
-      setResults(null);
-      setLoading(false);
-      setError(false);
-      return;
-    }
-    setLoading(true);
-    setError(false);
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const data = await searchAll(query.trim());
-        setResults(data);
-      } catch {
-        // Most likely cause right now: the /search endpoint doesn't exist
-        // on the backend yet. Fail quietly instead of breaking the navbar.
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }, DEBOUNCE_MS);
+    const searcher = createDebouncedSearcher({
+      search: searchAll,
+      onChange: setState,
+      delay: DEBOUNCE_MS,
+    });
+    searcherRef.current = searcher;
+    return () => searcher.cancel();
+  }, []);
 
-    return () => clearTimeout(debounceRef.current);
+  useEffect(() => {
+    searcherRef.current?.update(query);
   }, [query]);
 
   useEffect(() => {
@@ -63,7 +50,9 @@ export default function SearchBar({ autoFocus = false, onClose, className = "" }
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
-          placeholder="Search SRMS Connect..."
+          onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
+          placeholder="Search people, posts..."
+          aria-label="Search SRMS Connect"
           className="w-full pl-10 pr-9 py-2 rounded-full bg-[#1B2438]/5 border border-transparent text-sm text-[#1B2438] placeholder:text-[#1B2438]/40 focus:outline-none focus:bg-white focus:border-[#C98A2B]/40 focus:ring-2 focus:ring-[#C98A2B]/20 transition-colors"
         />
         {onClose && (
@@ -81,9 +70,8 @@ export default function SearchBar({ autoFocus = false, onClose, className = "" }
       {open && (
         <SearchResults
           query={query.trim()}
-          results={results}
-          loading={loading}
-          error={error}
+          status={state.status}
+          results={state.results}
           onSelect={() => {
             setOpen(false);
             onClose?.();

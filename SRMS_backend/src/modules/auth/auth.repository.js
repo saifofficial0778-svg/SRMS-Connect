@@ -55,17 +55,19 @@ const AuthRepository = {
     },
 
     async createProfile(connection, profileData) {
-        const { userId, fullName } = profileData
+        const { userId, fullName, branch = null, batchYear = null } = profileData
 
         const [result] = await connection.execute(
             `
         INSERT INTO profiles (
             user_id,
-            full_name
+            full_name,
+            branch,
+            batch_year
         )
-        VALUES (?, ?)
+        VALUES (?, ?, ?, ?)
         `,
-            [userId, fullName]
+            [userId, fullName, branch, batchYear]
         );
 
         return result.insertId;
@@ -75,13 +77,60 @@ const AuthRepository = {
     async findUserForLogin(enrollment) {
         const [user] = await pool.execute(
             `
-            SELECT id , password_hash,status,role
+            SELECT
+                id,
+                password_hash,
+                status,
+                role,
+                failed_login_attempts,
+                (locked_until IS NOT NULL AND locked_until > NOW()) AS is_locked,
+                GREATEST(1, CEIL(TIMESTAMPDIFF(SECOND, NOW(), locked_until) / 60)) AS lock_minutes
             FROM users
             WHERE enrollment=?
             LIMIT 1
             `, [enrollment]
         )
         return user[0]
+    },
+
+    // Increments the failure counter and locks the account once maxAttempts is reached.
+    // MySQL evaluates SET assignments left to right, so locked_until must come first
+    // to see the counter *before* this increment.
+    async registerFailedLogin(userId, maxAttempts, lockMinutes) {
+        await pool.execute(
+            `
+            UPDATE users
+            SET locked_until = IF(failed_login_attempts + 1 >= ?, DATE_ADD(NOW(), INTERVAL ? MINUTE), locked_until),
+                failed_login_attempts = failed_login_attempts + 1
+            WHERE id = ?
+            `,
+            [maxAttempts, lockMinutes, userId]
+        );
+    },
+
+    // Used by the auth middleware and the socket handshake on every authenticated request.
+    async findActiveSession(userId, tokenHash) {
+        const [rows] = await pool.execute(
+            `
+            SELECT s.id, s.user_id, u.role, u.status
+            FROM user_sessions s
+            JOIN users u ON u.id = s.user_id
+            WHERE s.user_id = ?
+              AND s.token_hash = ?
+              AND s.revoked_at IS NULL
+              AND s.expires_at > ?
+            LIMIT 1
+            `,
+            [userId, tokenHash, new Date()]
+        );
+        return rows[0];
+    },
+
+    async revokeAllSessions(connection, userId) {
+        await connection.execute(
+            `UPDATE user_sessions SET revoked_at = CURRENT_TIMESTAMP WHERE user_id = ? AND revoked_at IS NULL`,
+            [userId]
+        );
     },
 
     async createSession(connection, sessionData) {
@@ -105,7 +154,9 @@ const AuthRepository = {
         const [result] = await connection.execute(
             `
         UPDATE users
-        SET last_login = CURRENT_TIMESTAMP
+        SET last_login = CURRENT_TIMESTAMP,
+            failed_login_attempts = 0,
+            locked_until = NULL
         WHERE id = ?
         `,
             [userId]
@@ -158,7 +209,9 @@ const AuthRepository = {
             `
             UPDATE users
             SET
-            password_hash=?
+            password_hash=?,
+            failed_login_attempts = 0,
+            locked_until = NULL
             WHERE id=?
             `, [passwordHash, userId]
         )

@@ -68,7 +68,13 @@ export default function Login() {
       const data = await loginUser({ enrollment: enrollment.trim(), password });
       localStorage.setItem("token", data.data.token);
       localStorage.setItem("userId", data.data.userId);
-      navigate("/home");
+      localStorage.setItem("role", data.data.role);   // ye add karo
+
+      if (data.data.role === "ADMIN") {
+        navigate("/admin/users");
+      } else {
+        navigate("/home");
+      }
     } catch (error) {
       const message =
         error.response?.data?.message || "Invalid enrollment number or password.";
@@ -118,6 +124,7 @@ export default function Login() {
       const data = await verifyOtp({ enrollment: enrollment.trim(), otp: otp.trim() });
       localStorage.setItem("token", data.data.token);
       localStorage.setItem("userId", data.data.userId);
+      localStorage.setItem("role", data.data.role);
       navigate("/home");
     } catch (error) {
       const message = error.response?.data?.message || "Invalid or expired OTP.";
@@ -155,20 +162,18 @@ export default function Login() {
         <button
           type="button"
           onClick={() => switchMode("password")}
-          className={`flex-1 text-sm font-medium py-2 rounded-md transition ${
-            mode === "password"
+          className={`flex-1 text-sm font-medium py-2 rounded-md transition ${mode === "password"
               ? "bg-white shadow text-[#1B2438]"
               : "text-[#1B2438]/60"
-          }`}
+            }`}
         >
           Password
         </button>
         <button
           type="button"
           onClick={() => switchMode("otp")}
-          className={`flex-1 text-sm font-medium py-2 rounded-md transition ${
-            mode === "otp" ? "bg-white shadow text-[#1B2438]" : "text-[#1B2438]/60"
-          }`}
+          className={`flex-1 text-sm font-medium py-2 rounded-md transition ${mode === "otp" ? "bg-white shadow text-[#1B2438]" : "text-[#1B2438]/60"
+            }`}
         >
           OTP Login
         </button>

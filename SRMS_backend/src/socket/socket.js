@@ -1,25 +1,30 @@
-const jwt = require("jsonwebtoken");
+const AuthService = require("../modules/auth/auth.service");
 const ConversationService = require("../modules/chat/chat.service");
+const { setIo, userRoom } = require("./socketRegistry");
 
+// userId -> Set of socket ids. A user can have several tabs open; they count as online until
+// the last one closes, and everything addressed to the user goes to all of them (via their room).
 const onlineUsers = new Map();
 
 const setupSocket = (io) => {
 
+    // lets REST services (e.g. notifications) push events to a user's sockets
+    setIo(io);
+
     // Socket JWT authentication
-    io.use((socket, next) => {
+    io.use(async (socket, next) => {
         try {
-            const token = socket.handshake.auth.token;
+            const token = socket.handshake.auth && socket.handshake.auth.token;
 
             if (!token) {
                 return next(new Error("Authentication token required"));
             }
 
-            const decoded = jwt.verify(
-                token,
-                process.env.JWT_SECRET
-            );
+            // same checks as the HTTP middleware: JWT signature, live session, ACTIVE user
+            const { userId, role } = await AuthService.authenticateToken(token);
 
-            socket.user = decoded;
+            socket.user = { userId, role };
+            socket.token = token;
 
             next();
         } catch (error) {
@@ -27,23 +32,54 @@ const setupSocket = (io) => {
         }
     });
 
+    // Re-checks the session before state-changing events so a logout, expiry or admin
+    // block takes effect on an already-open socket, not only on the next handshake.
+    const ensureSession = async (socket) => {
+        try {
+            await AuthService.authenticateToken(socket.token);
+            return true;
+        } catch (error) {
+            socket.emit("auth_error", { message: "Session expired. Please log in again." });
+            socket.disconnect(true);
+            return false;
+        }
+    };
+
+    const emitToUser = (targetUserId, event, payload) => {
+        if (onlineUsers.has(Number(targetUserId))) {
+            io.to(userRoom(targetUserId)).emit(event, payload);
+        }
+    };
+
     // Connection
     io.on("connection", (socket) => {
 
         const userId = socket.user.userId;
 
-        onlineUsers.set(userId, socket.id);
+        socket.join(userRoom(userId));
+
+        const wasOnline = onlineUsers.has(userId);
+        if (!wasOnline) onlineUsers.set(userId, new Set());
+        onlineUsers.get(userId).add(socket.id);
 
         console.log(`User ${userId} connected`);
 
         // let the newly-connected client know who else is online right now
         socket.emit("online_users", Array.from(onlineUsers.keys()));
 
-        // tell everyone else this user just came online
-        socket.broadcast.emit("user_online", { userId });
+        // a page that mounts after the socket is already connected missed the event above
+        socket.on("get_online_users", () => {
+            socket.emit("online_users", Array.from(onlineUsers.keys()));
+        });
+
+        // tell everyone else this user just came online (only for their first tab)
+        if (!wasOnline) {
+            socket.broadcast.emit("user_online", { userId });
+        }
 
         // Send message
         socket.on("send_message", async (data) => {
+            if (!(await ensureSession(socket))) return;
             try {
                 const { conversationId, content } = data;
 
@@ -52,9 +88,6 @@ const setupSocket = (io) => {
                     userId,
                     content
                 );
-
-                const receiverSocketId =
-                    onlineUsers.get(result.receiverId);
 
                 const payload = {
                     conversationId,
@@ -67,10 +100,8 @@ const setupSocket = (io) => {
                 // Sender confirmation
                 socket.emit("message_sent", payload);
 
-                // Receiver gets message instantly
-                if (receiverSocketId) {
-                    io.to(receiverSocketId).emit("new_message", payload);
-                }
+                // Receiver gets message instantly (on every tab they have open)
+                emitToUser(result.receiverId, "new_message", payload);
 
             } catch (error) {
                 socket.emit("message_error", {
@@ -82,32 +113,24 @@ const setupSocket = (io) => {
         // NEW: typing indicator — sender tells us they're typing, we
         // relay it only to the other person in that conversation.
         socket.on("typing", ({ conversationId, receiverId }) => {
-            const receiverSocketId = onlineUsers.get(receiverId);
-            if (receiverSocketId) {
-                io.to(receiverSocketId).emit("user_typing", { conversationId, userId });
-            }
+            emitToUser(receiverId, "user_typing", { conversationId, userId });
         });
 
         socket.on("stop_typing", ({ conversationId, receiverId }) => {
-            const receiverSocketId = onlineUsers.get(receiverId);
-            if (receiverSocketId) {
-                io.to(receiverSocketId).emit("user_stop_typing", { conversationId, userId });
-            }
+            emitToUser(receiverId, "user_stop_typing", { conversationId, userId });
         });
 
         // NEW: read receipts — when this user views a conversation, mark
         // the other person's messages read and tell them so their sent
         // bubbles can flip to "seen".
         socket.on("mark_read", async ({ conversationId, otherUserId }) => {
+            if (!(await ensureSession(socket))) return;
             try {
                 await ConversationService.markConversationRead(userId, conversationId);
-                const otherSocketId = onlineUsers.get(otherUserId);
-                if (otherSocketId) {
-                    io.to(otherSocketId).emit("conversation_read", {
-                        conversationId,
-                        readByUserId: userId,
-                    });
-                }
+                emitToUser(otherUserId, "conversation_read", {
+                    conversationId,
+                    readByUserId: userId,
+                });
             } catch (error) {
                 // silent — the REST PATCH /:conversationId/read endpoint
                 // still exists as a fallback if this fails
@@ -117,9 +140,15 @@ const setupSocket = (io) => {
         // Disconnect
         socket.on("disconnect", () => {
 
-            onlineUsers.delete(userId);
-
-            socket.broadcast.emit("user_offline", { userId });
+            const sockets = onlineUsers.get(userId);
+            if (sockets) {
+                sockets.delete(socket.id);
+                // only "offline" once their last tab/connection is gone
+                if (sockets.size === 0) {
+                    onlineUsers.delete(userId);
+                    socket.broadcast.emit("user_offline", { userId });
+                }
+            }
 
             console.log(`User ${userId} disconnected`);
         });

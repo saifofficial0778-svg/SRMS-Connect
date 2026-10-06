@@ -2,6 +2,8 @@ const ProfileRepository = require("./profile.repository");
 const AppError = require('../../utils/AppError')
 const uploadToCloudinary = require("../../utils/uploadToCloudinary");
 const deleteFromCloudinary = require("../../utils/deleteFromCloudinary");
+const { ALUMNI_ONLY_INTENTS } = require("./profile.constants");
+const SkillService = require("../skill/skill.service");
 
 const ProfileService = {
 
@@ -25,6 +27,22 @@ const ProfileService = {
         return await ProfileRepository.updateProfile(userId, profileData);
     },
 
+    async updateOpenTo(userId, role, intents) {
+        const profile = await ProfileRepository.findProfileByUserId(userId);
+
+        if (!profile) {
+            throw new AppError("Profile not found", 404);
+        }
+
+        // role comes from the verified session, never from the request body
+        if (role !== "ALUMNI" && intents.some((i) => ALUMNI_ONLY_INTENTS.includes(i))) {
+            throw new AppError("Only alumni can mark themselves as Hiring", 403);
+        }
+
+        await ProfileRepository.replaceOpenTo(profile.id, intents);
+        return { open_to: intents };
+    },
+
     async addSkill(userId, skill) {
         const profile = await ProfileRepository.findProfileByUserId(userId);
 
@@ -35,6 +53,14 @@ const ProfileService = {
         const isSkill = await ProfileRepository.findSkill(profile.id, skill)
         if (isSkill) {
             throw new AppError("skill already exist ", 409)
+        }
+
+        // a different spelling of a skill already on the profile is the same skill
+        const { key } = await SkillService.canonicalize(skill);
+        for (const existing of profile.skills || []) {
+            if ((await SkillService.canonicalize(existing.skill)).key === key) {
+                throw new AppError(`You already have this skill (listed as "${existing.skill}")`, 409);
+            }
         }
 
         const result = await ProfileRepository.createSkill(profile.id, skill)

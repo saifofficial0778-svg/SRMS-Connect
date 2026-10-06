@@ -9,8 +9,47 @@ const { sendOtpEmail } = require('../../utils/email.service');
 
 const MAX_OTP_ATTEMPTS = 5;
 const OTP_EXPIRY_MINUTES = 5;
+const MAX_FAILED_LOGINS = Number(process.env.LOGIN_MAX_ATTEMPTS) || 5;
+const LOGIN_LOCK_MINUTES = Number(process.env.LOGIN_LOCK_MINUTES) || 15;
+const FALLBACK_SESSION_MINUTES = 15;
+
+const hashToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
+
+// The session row must expire exactly when the JWT does, otherwise the DB check and the
+// JWT_EXPIRES_IN setting would disagree about how long a login lasts.
+function sessionExpiryFromToken(token) {
+    const decoded = jwt.decode(token);
+    return decoded?.exp
+        ? new Date(decoded.exp * 1000)
+        : new Date(Date.now() + FALLBACK_SESSION_MINUTES * 60 * 1000);
+}
 
 const AuthService = {
+
+    // Single source of truth for "is this bearer token still valid right now?".
+    // Used by the HTTP auth middleware and the Socket.IO handshake.
+    async authenticateToken(token) {
+        const invalid = () => new AppError("Session expired or invalid. Please log in again.", 401);
+
+        let payload;
+        try {
+            payload = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (err) {
+            throw invalid();
+        }
+
+        const session = await authRepository.findActiveSession(payload.userId, hashToken(token));
+        if (!session) {
+            throw invalid();
+        }
+        if (session.status !== "ACTIVE") {
+            // 401 (not 403): the session is no longer usable, so clients should drop it and sign in again
+            throw new AppError("Your account is not active. Contact admin", 401);
+        }
+
+        // role comes from the DB, not the token, so role changes apply immediately
+        return { userId: session.user_id, role: session.role };
+    },
 
     async register(registerData) {
         const { enrollment, dob, password, confirmPassword } = registerData;
@@ -52,7 +91,15 @@ const AuthService = {
         try {
             await connection.beginTransaction();
             userId = await authRepository.createUser(connection, userData);
-            profile = await authRepository.createProfile(connection, { userId, fullName });
+            // branch + batch come from the institution's master record (admission year for
+            // students, passout year for alumni) so directory filters work from day one
+            const master = student || alumni;
+            profile = await authRepository.createProfile(connection, {
+                userId,
+                fullName,
+                branch: master.branch ?? null,
+                batchYear: (student ? master.admission_year : master.passout_year) ?? null
+            });
             await connection.commit();
         } catch (error) {
             await connection.rollback();
@@ -189,12 +236,20 @@ const AuthService = {
             throw new AppError("User is Inactive", 400)
         }
 
+        if (userForLogin.is_locked) {
+            throw new AppError(
+                `Too many failed login attempts. Try again in ${userForLogin.lock_minutes} minute(s) or reset your password.`,
+                429
+            );
+        }
+
         const isPasswordValid = await bcrypt.compare(
             password,
             userForLogin.password_hash
         );
 
         if (!isPasswordValid) {
+            await authRepository.registerFailedLogin(userForLogin.id, MAX_FAILED_LOGINS, LOGIN_LOCK_MINUTES);
             throw new AppError("Invalid credentials", 401);
         }
 
@@ -213,9 +268,7 @@ const AuthService = {
 
         const { deviceInfo, ipAddress } = sessionInfo;
 
-        const expiresAt = new Date(
-            Date.now() + 15 * 60 * 1000
-        );
+        const expiresAt = sessionExpiryFromToken(token);
 
         const sessionData = {
             userId: userForLogin.id,
@@ -240,6 +293,7 @@ const AuthService = {
         }
         return {
             userId: userForLogin.id,
+            role: userForLogin.role, 
             token
         };
     },
@@ -262,33 +316,83 @@ const AuthService = {
     },
 
     async forgotPassword(enrollment) {
-        const userForLogin = await authRepository.findUserForLogin(enrollment)
-        if (!userForLogin) {
-            return
+        const user = await authRepository.findUserByEnrollmentForOtp(enrollment);
+        if (!user) {
+            // same response as success so enrollments can't be enumerated
+            return { message: "OTP sent to registered email" };
         }
 
-        if (userForLogin.status !== "ACTIVE") {
+        if (user.status !== "ACTIVE") {
             throw new AppError("User is Inactive", 400)
         }
 
+        const otp = generateOtp();
+        const otpHash = await hashOtp(otp);
+        const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+            await authRepository.invalidatePreviousOtps(connection, user.id, "RESET_PASSWORD");
+            await authRepository.createOtp(connection, {
+                userId: user.id,
+                otpHash,
+                purpose: "RESET_PASSWORD",
+                expiresAt
+            });
+            await connection.commit();
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+
+        await sendOtpEmail(user.email, otp, "password reset");
+
+        return { message: "OTP sent to registered email" };
+    },
+
+    // OTP verify hone par hi reset token milta hai; reset-password API wahi purani rahegi
+    async verifyForgotPasswordOtp(enrollment, otp) {
+        const user = await authRepository.findUserByEnrollmentForOtp(enrollment);
+        if (!user || user.status !== "ACTIVE") {
+            throw new AppError("Invalid OTP", 401);
+        }
+
+        const otpRecord = await authRepository.findLatestValidOtp(user.id, "RESET_PASSWORD");
+        if (!otpRecord) {
+            throw new AppError("OTP expired or not found. Please request a new one", 400);
+        }
+        if (otpRecord.attempts >= MAX_OTP_ATTEMPTS) {
+            throw new AppError("Too many attempts. Please request a new OTP", 429);
+        }
+
+        const isValid = await compareOtp(otp, otpRecord.otp_hash);
+        if (!isValid) {
+            await authRepository.incrementOtpAttempts(otpRecord.id);
+            throw new AppError("Invalid OTP", 401);
+        }
+
         const resetToken = crypto.randomBytes(32).toString("hex");
+        const tokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-        const tokenHash = crypto
-            .createHash("sha256")
-            .update(resetToken)
-            .digest("hex");
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+            await authRepository.markOtpUsed(connection, otpRecord.id);
+            await connection.commit();
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
 
-        const expiresAt = new Date(
-            Date.now() + 15 * 60 * 1000
-        );
+        await authRepository.createPasswordReset(user.id, tokenHash, expiresAt);
 
-        await authRepository.createPasswordReset(
-            userForLogin.id,
-            tokenHash,
-            expiresAt
-        );
-
-        return resetToken
+        return { resetToken };
     },
 
     async resetPassword(resetToken, newPassword) {
@@ -316,6 +420,9 @@ const AuthService = {
             await connection.beginTransaction()
 
             await authRepository.updateUserPassword(connection, isToken.user_id, passwordHash)
+
+            // a password reset must log out every existing session
+            await authRepository.revokeAllSessions(connection, isToken.user_id)
 
             await authRepository.markResetTokenUsed(connection, isToken.id)
 
@@ -410,7 +517,7 @@ const AuthService = {
         const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
         const { deviceInfo, ipAddress } = sessionInfo;
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+        const expiresAt = sessionExpiryFromToken(token);
 
         const connection = await pool.getConnection();
         try {
@@ -432,7 +539,7 @@ const AuthService = {
             connection.release();
         }
 
-        return { userId: user.id, token };
+        return { userId: user.id, role: user.role,token };
     }
 };
 

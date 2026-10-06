@@ -1,22 +1,22 @@
 import { useState } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link, Navigate } from "react-router-dom";
 import { resetPassword } from "../../services/authService";
 import AuthLayout from "../../components/auth/AuthLayout";
-import AuthInput from "../../components/auth/AuthInput";
 import PasswordInput from "../../components/auth/PasswordInput";
 import PasswordStrengthMeter from "../../components/auth/PasswordStrengthMeter";
 import AuthButton from "../../components/auth/AuthButton";
 import useToast from "../../hooks/useToast";
 import ToastStack from "../../components/ui/Toast";
-import { KeyIcon, ShieldIcon, CheckIcon } from "../../components/auth/icons";
+import { ShieldIcon, CheckIcon } from "../../components/auth/icons";
 
 const FEATURES = [
-  { icon: <ShieldIcon />, text: "Your token is verified server-side" },
-  { icon: <CheckIcon />, text: "Takes less than a minute" },
+  { icon: <ShieldIcon />, text: "Identity verified through OTP" },
+  { icon: <CheckIcon />, text: "Passwords are stored securely and never shared" },
 ];
 
 export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const location = useLocation();
@@ -25,12 +25,25 @@ export default function ResetPassword() {
 
   const resetToken = location.state?.resetToken || "";
 
+  // no verified OTP -> send them back to start the flow
+  if (!resetToken) {
+    return <Navigate to="/forgot-password" replace />;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
 
     if (!newPassword) {
       setError("Enter a new password.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
     setError("");
@@ -52,21 +65,13 @@ export default function ResetPassword() {
 
   return (
     <AuthLayout
-      heading="Create a new password."
-      tagline="Choose something strong and memorable — you'll be back to browsing SRMS Connect in a moment."
+      heading="Set a new password."
+      tagline="Choose a strong password of at least 8 characters to keep your SRMS Connect account protected."
       features={FEATURES}
       cardTitle="Reset password"
-      cardSubtitle="Enter your reset token and new password."
+      cardSubtitle="OTP verified. Enter your new password."
     >
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-        <AuthInput
-          label="Reset Token"
-          icon={<KeyIcon />}
-          value={resetToken}
-          readOnly
-          disabled
-        />
-
         <div>
           <PasswordInput
             label="New Password"
@@ -78,6 +83,14 @@ export default function ResetPassword() {
           />
           <PasswordStrengthMeter password={newPassword} />
         </div>
+
+        <PasswordInput
+          label="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirm new password"
+          autoComplete="new-password"
+        />
 
         <AuthButton type="submit" loading={loading} loadingText="Resetting...">
           Reset Password

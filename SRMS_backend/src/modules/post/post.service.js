@@ -3,6 +3,7 @@ const AppError = require("../../utils/AppError");
 const pool = require("../../config/db");
 const uploadToCloudinary = require("../../utils/uploadToCloudinary");
 const deleteFromCloudinary = require("../../utils/deleteFromCloudinary");
+const NotificationService = require("../notification/notification.service");
 
 const PostService = {
 
@@ -100,10 +101,15 @@ const PostService = {
         } finally {
             connection.release()
         }
+
+        await NotificationService.removePostNotifications(postId)
     },
 
     async likePost(userId, postId) {
         const post = await PostRepository.findPostById(postId)
+        if (!post) {
+            throw new AppError("Post not found", 404);
+        }
         if (post.status !== "ACTIVE" || post.deleted_at !== null) {
             throw new AppError("Post is not available", 400);
         }
@@ -114,6 +120,9 @@ const PostService = {
         }
 
         const result = await PostRepository.createLike(postId, userId)
+
+        await NotificationService.notifyPostLike({ postOwnerId: post.user_id, actorId: userId, postId })
+
         return result
     },
     async unlikePost(userId, postId) {
@@ -137,11 +146,21 @@ const PostService = {
             throw new AppError("Post is not available", 400);
         }
 
-        return await PostRepository.createComment(
+        const commentId = await PostRepository.createComment(
             postId,
             userId,
             content
         );
+
+        await NotificationService.notifyPostComment({
+            postOwnerId: post.user_id,
+            actorId: userId,
+            postId,
+            commentId,
+            content,
+        });
+
+        return commentId;
     },
 
     // NEW
@@ -187,7 +206,11 @@ const PostService = {
             );
         }
 
-        return await PostRepository.deleteComment(commentId);
+        const result = await PostRepository.deleteComment(commentId);
+
+        await NotificationService.removeCommentNotification(commentId);
+
+        return result;
     },
 
     async getFeed(userId, page, limit) {

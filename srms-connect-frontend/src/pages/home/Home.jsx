@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../../services/authService";
 import { getFeed } from "../../services/postService";
 import { getProfile } from "../../services/profileService";
 import {
@@ -35,9 +36,8 @@ export default function Home() {
   // connectionMap: { [otherUserId]: { status: "none"|"sent"|"received"|"connected", connectionId } }
   const [connectionMap, setConnectionMap] = useState({});
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
+  const handleLogout = async () => {
+    await logoutUser();
     navigate("/login");
   };
 

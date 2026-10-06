@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { getProfile, getPublicProfileById } from "../../services/profileService";
 import { getOrCreateConversation } from "../../services/chatService";
 import {
@@ -16,6 +16,9 @@ import Avatar from "../../components/profile/Avatar";
 import BasicInfoCard from "../../components/profile/BasicInfoCard";
 import SocialLinks from "../../components/profile/SocialLinks";
 import { BuildingIcon, LocationIcon } from "../../components/profile/icons";
+import VerifiedBadge from "../../components/ui/VerifiedBadge";
+import OpenToChips from "../../components/ui/OpenToChips";
+import { academicLine, isVerifiedAlumni } from "../../utils/personFormat";
 
 export default function PublicProfile() {
   const { userId } = useParams();
@@ -247,6 +250,28 @@ export default function PublicProfile() {
                 >
                   {full_name || "SRMS Member"}
                 </h1>
+                {isVerifiedAlumni(profile) && <VerifiedBadge className="mt-1.5" />}
+                {academicLine(profile) && (
+                  <p className="mt-1 text-sm text-[#1B2438]/55">{academicLine(profile)}</p>
+                )}
+                <OpenToChips intents={profile.open_to} className="mt-2" />
+                {/* students only; the server decides whether the request is allowed */}
+                {profile.role === "ALUMNI" && localStorage.getItem("role") === "STUDENT" && (
+                  <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium">
+                    <Link to={`/career/new?type=QUESTION&alumni=${profile.user_id}`} className="text-[#C98A2B] hover:text-[#B37A22]">
+                      Ask a question
+                    </Link>
+                    <Link to={`/career/new?type=RESUME_REVIEW&alumni=${profile.user_id}`} className="text-[#C98A2B] hover:text-[#B37A22]">
+                      Request a resume review
+                    </Link>
+                    {/* a warm introduction only makes sense while you are not connected yet */}
+                    {status !== "connected" && (
+                      <Link to={`/mentorship/intros/new?target=${profile.user_id}`} className="text-[#C98A2B] hover:text-[#B37A22]">
+                        Ask for an introduction
+                      </Link>
+                    )}
+                  </p>
+                )}
                 <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#1B2438]/70">
                   {(designation || company) && (
                     <span className="flex items-center gap-1.5">

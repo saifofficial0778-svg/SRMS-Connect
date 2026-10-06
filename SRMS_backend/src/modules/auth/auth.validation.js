@@ -26,6 +26,11 @@ const resetPasswordSchema = z.object({
     newPassword: z.string().min(8)
 })
 
+const verifyForgotOtpSchema = z.object({
+    enrollment: z.string().trim().min(1, "Enrollment is required"),
+    otp: z.string().length(6, "OTP must be 6 digits")
+})
+
 const requestOtpSchema = z.object({
     enrollment: z.string().trim().min(1, "Enrollment is required")
 });
@@ -50,6 +55,7 @@ module.exports = {
     loginSchema,
     forgotPasswordSchema,
     resetPasswordSchema,
+    verifyForgotOtpSchema,
     requestOtpSchema,
     verifyOtpSchema,
     verifyRegisterOtpSchema,

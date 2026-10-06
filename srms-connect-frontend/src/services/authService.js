@@ -1,4 +1,19 @@
 import authApi from "./api";
+import { clearAuthState } from "./authInterceptor";
+import { disconnectSocket } from "./socket";
+
+// Revokes the session on the server first (so the token stops working everywhere),
+// then clears local state even if that request fails (e.g. already expired).
+export const logoutUser = async () => {
+  try {
+    await authApi.post("/auth/logout");
+  } catch {
+    // ignore - local logout must always succeed
+  } finally {
+    clearAuthState(localStorage);
+    disconnectSocket();
+  }
+};
 
 export const loginUser = async (credentials) => {
   const response = await authApi.post("/auth/login", credentials);
@@ -25,7 +40,12 @@ export const forgotPassword = async (credentials) => {
   return response.data;
 };
 
-export const resetPassword = async (credentials) => {
+export const verifyForgotPasswordOtp = async ({ enrollment, otp }) => {
+  const response = await authApi.post("/auth/forgot-password/verify-otp", { enrollment, otp });
+  return response.data;
+};
+
+export const resetPassword =async (credentials) => {
   const response = await authApi.post("/auth/reset-password", credentials);
   return response.data;
 };

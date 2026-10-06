@@ -66,7 +66,17 @@ const AuthController = {
 
         return res.status(200).json({
             success: true,
-            message: "Password reset token generated",
+            message: "If this enrollment is registered, an OTP has been sent to the registered email",
+            data: result
+        });
+    }),
+
+    verifyForgotPasswordOtp: catchAsync(async (req, res) => {
+        const { enrollment, otp } = req.body;
+        const result = await AuthService.verifyForgotPasswordOtp(enrollment, otp);
+        return res.status(200).json({
+            success: true,
+            message: "OTP verified",
             data: result
         });
     }),

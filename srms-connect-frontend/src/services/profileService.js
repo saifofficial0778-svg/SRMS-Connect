@@ -61,6 +61,12 @@ export const deleteProject = async (projectId) => {
     return response.data;
 };
 
+// Replace the "Open to" career intents (the full list; an empty list clears them)
+export const updateOpenTo = async (intents) => {
+    const response = await authApi.put("/profile/open-to", { intents });
+    return response.data;
+};
+
 export const getPublicProfileById = async (userId) => {
     const response = await authApi.get(`/profile/${userId}`);
     return response.data;

@@ -1,6 +1,7 @@
 const ConversationRepository = require("./chat.repository");
 const ConnectionRepository = require("../connection/connection.repository");
 const AppError = require("../../utils/AppError");
+const NotificationService = require("../notification/notification.service");
 
 const ConversationService = {
 
@@ -20,8 +21,16 @@ const ConversationService = {
         const conversation = await ConversationRepository.findConversation(userOneId, userTwoId);
 
         if (!conversation) {
-            const newConversationId = await ConversationRepository.createConversation(userOneId, userTwoId);
-            return newConversationId;
+            try {
+                return await ConversationRepository.createConversation(userOneId, userTwoId);
+            } catch (error) {
+                // concurrent create: the unique pair index rejected ours, so use the winner
+                if (error.code === "ER_DUP_ENTRY") {
+                    const existing = await ConversationRepository.findConversation(userOneId, userTwoId);
+                    if (existing) return existing.id;
+                }
+                throw error;
+            }
         }
 
     
@@ -44,12 +53,27 @@ const ConversationService = {
             throw new AppError("Message cannot be empty", 400);
         }
 
-        const messageId = await ConversationRepository.createMessage(conversationId, senderId, content.trim());
-
         const receiverId =
             conversation.user_one_id === senderId
                 ? conversation.user_two_id
                 : conversation.user_one_id;
+
+        // Checked on every send (REST and Socket.IO both land here), so removing a
+        // connection immediately stops further messages in that conversation.
+        const connection = await ConnectionRepository.findConnection(senderId, receiverId);
+        if (!connection || connection.status !== "ACCEPTED") {
+            throw new AppError("You can chat only with connections", 403);
+        }
+
+        const messageId = await ConversationRepository.createMessage(conversationId, senderId, content.trim());
+
+        // covers both the REST endpoint and Socket.IO, since both send through this method
+        await NotificationService.notifyNewMessage({
+            receiverId,
+            senderId,
+            conversationId: conversation.id,
+            content: content.trim(),
+        });
 
         return {
             messageId,
@@ -110,7 +134,11 @@ const ConversationService = {
             throw new AppError("You don't have access to this conversation", 403);
         }
 
-        return await ConversationRepository.markConversationRead(conversationId, userId);
+        const updated = await ConversationRepository.markConversationRead(conversationId, userId);
+
+        await NotificationService.markMessageNotificationsRead(userId, conversation.id);
+
+        return updated;
     },
 
 };

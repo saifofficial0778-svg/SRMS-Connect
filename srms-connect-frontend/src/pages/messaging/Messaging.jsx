@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import ConversationList from "../../components/messaging/ConversationList";
 import ChatWindow from "../../components/messaging/ChatWindow";
 import EmptyChat from "../../components/messaging/EmptyChat";
@@ -10,10 +11,14 @@ import {
   sendMessageRest,
   markConversationRead,
 } from "../../services/chatService";
-import { connectSocket, getSocket, disconnectSocket } from "../../services/socket";
+import { connectSocket, getSocket } from "../../services/socket";
 
 export default function Messaging() {
   const currentUserId = Number(localStorage.getItem("userId"));
+  // set by notifications / "Message" buttons to open a specific conversation
+  const requestedConversationId = Number(useLocation().state?.conversationId) || null;
+  // always points at the latest handleSelectConversation (defined further down)
+  const selectConversationRef = useRef(null);
 
   const [conversations, setConversations] = useState([]);
   const [loadingConversations, setLoadingConversations] = useState(true);
@@ -44,7 +49,13 @@ export default function Messaging() {
       setConversationsError("");
       try {
         const res = await getConversations();
-        if (!cancelled) setConversations(res?.data || []);
+        if (!cancelled) {
+          const list = res?.data || [];
+          setConversations(list);
+          if (requestedConversationId && list.some((c) => c.conversationId === requestedConversationId)) {
+            selectConversationRef.current?.(requestedConversationId);
+          }
+        }
       } catch (err) {
         if (!cancelled) {
           setConversationsError(
@@ -58,6 +69,7 @@ export default function Messaging() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---- socket lifecycle ----
@@ -194,6 +206,10 @@ export default function Messaging() {
     socket.on("message_error", handleMessageError);
     socket.on("connect_error", handleConnectError);
 
+    // the socket may already be connected (notifications opened it), in which case the server's
+    // initial "online_users" was sent before this page was listening - ask for it again
+    if (socket.connected) socket.emit("get_online_users");
+
     return () => {
       socket.off("online_users", handleOnlineUsers);
       socket.off("user_online", handleUserOnline);
@@ -205,7 +221,7 @@ export default function Messaging() {
       socket.off("message_sent", handleMessageSent);
       socket.off("message_error", handleMessageError);
       socket.off("connect_error", handleConnectError);
-      disconnectSocket();
+      // not disconnected here: the socket is shared with notifications and closes on logout
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -251,6 +267,10 @@ export default function Messaging() {
       }
     }
   };
+
+  useEffect(() => {
+    selectConversationRef.current = handleSelectConversation;
+  });
 
   const doSend = async (conversationId, content) => {
     const tempId = `temp-${Date.now()}`;

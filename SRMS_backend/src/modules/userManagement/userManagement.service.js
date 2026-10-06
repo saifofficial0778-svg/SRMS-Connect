@@ -1,5 +1,6 @@
 const userRepository = require("./userManagement.repository");
 const AppError = require('../../utils/AppError')
+const NotificationService = require('../notification/notification.service')
 
 const UserService = {
 
@@ -64,6 +65,12 @@ const UserService = {
         }
 
         const result = await userRepository.updateUserStatus(id, status, adminId, reason)
+
+        // only approval / reinstatement is worth a notification: a blocked or rejected user
+        // can't sign in to read one
+        if (status === "ACTIVE") {
+            await NotificationService.notifyAccountActivated({ userId: Number(id), previousStatus: user.status })
+        }
 
         return result
     }

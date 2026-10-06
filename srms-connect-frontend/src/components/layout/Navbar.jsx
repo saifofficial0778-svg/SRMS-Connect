@@ -1,21 +1,26 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { getProfile } from "../../services/profileService";
 import srmsLogo from "../../assets/srms.png";
 import SearchBar from "./SearchBar";
 import ProfileMenu from "./ProfileMenu";
-import { HomeIcon, ChatIcon, BriefcaseIcon, CompassIcon, UsersIcon, MenuIcon, CloseIcon, SearchIcon } from "./navIcons";
+import NotificationBell from "../notifications/NotificationBell";
+import { HomeIcon, ChatIcon, BriefcaseIcon, CompassIcon, UsersIcon, GraduationIcon, HandshakeIcon, ChartIcon, MenuIcon, CloseIcon, SearchIcon } from "./navIcons";
 
 const NAV_LINKS = [
   { to: "/home", label: "Feed", icon: HomeIcon },
   { to: "/network", label: "My Network", icon: UsersIcon },
+  { to: "/alumni", label: "Alumni", icon: GraduationIcon },
   { to: "/chat", label: "Chat", icon: ChatIcon },
   { to: "/jobs", label: "Jobs", icon: BriefcaseIcon },
+  { to: "/career", label: "Career help", icon: HandshakeIcon },
+  // one entry for both insight pages (Industry Pulse and My Skill Gap link to each other)
+  { to: "/industry-pulse", label: "Insights", icon: ChartIcon, alsoActiveOn: ["/skill-gap"] },
   { to: "/mentorship", label: "Mentorship", icon: CompassIcon },
 ];
 
 function linkClasses({ isActive }) {
-  return `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+  return `flex items-center gap-2 px-2.5 xl:px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
     isActive
       ? "bg-[#C98A2B]/10 text-[#C98A2B]"
       : "text-[#1B2438]/65 hover:text-[#1B2438] hover:bg-[#1B2438]/5"
@@ -28,6 +33,7 @@ export default function Navbar() {
   const [user, setUser] = useState({ full_name: "", profile_photo: "" });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     let cancelled = false;
@@ -64,16 +70,31 @@ export default function Navbar() {
         </NavLink>
 
         {/* Desktop search — sits right next to the logo */}
-        <SearchBar className="hidden md:block w-full max-w-xs" />
+        <SearchBar className="hidden md:block w-full max-w-[14rem] lg:max-w-[18rem] xl:max-w-xs" />
 
         {/* Desktop nav links */}
         <nav className="hidden md:flex items-center gap-1 ml-auto">
-          {NAV_LINKS.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} className={linkClasses}>
-              <Icon />
-              {label}
-            </NavLink>
-          ))}
+          {NAV_LINKS.map(({ to, label, icon: Icon, alsoActiveOn = [] }) => {
+            const forcedActive = alsoActiveOn.includes(pathname);
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) => linkClasses({ isActive: isActive || forcedActive })}
+                title={label}
+                aria-label={label}
+              >
+                {({ isActive }) => (
+                  <>
+                    <Icon />
+                    {/* With this many destinations the bar shows icons (with tooltips) and spells out
+                        only the page you are on, so everything fits on one line next to the search. */}
+                    {(isActive || forcedActive) && <span className="hidden lg:inline">{label}</span>}
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
 
         {/* Right side */}
@@ -86,6 +107,8 @@ export default function Navbar() {
           >
             {mobileSearchOpen ? <CloseIcon /> : <SearchIcon />}
           </button>
+
+          <NotificationBell />
 
           <ProfileMenu user={user} />
 

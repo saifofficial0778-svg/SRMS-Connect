@@ -1,6 +1,9 @@
 const ConnectionRepository = require("./connection.repository");
 const userRepository = require("../userManagement/userManagement.repository");
 const AppError = require("../../utils/AppError");
+const NotificationService = require("../notification/notification.service");
+
+const LIVE_STATUSES = ["PENDING", "ACCEPTED"];
 
 const ConnectionService = {
 
@@ -20,16 +23,32 @@ const ConnectionService = {
             receiverId
         );
 
-        if (existingConnection) {
+        // findConnection returns the live (PENDING/ACCEPTED) row first, so only a live
+        // connection blocks a new request. Earlier REJECTED/CANCELLED/REMOVED rows stay as history.
+        if (existingConnection && LIVE_STATUSES.includes(existingConnection.status)) {
             throw new AppError("Connection already exists", 409);
         }
 
-        const result = await ConnectionRepository.createConnection(
-            senderId,
-            receiverId
-        );
+        try {
+            const connectionId = await ConnectionRepository.createConnection(
+                senderId,
+                receiverId
+            );
 
-        return result;
+            await NotificationService.notifyConnectionRequest({
+                senderId,
+                receiverId: Number(receiverId),
+                connectionId,
+            });
+
+            return connectionId;
+        } catch (error) {
+            // two simultaneous requests: the unique live-pair index lets exactly one win
+            if (error.code === "ER_DUP_ENTRY") {
+                throw new AppError("Connection already exists", 409);
+            }
+            throw error;
+        }
     },
 
     async acceptRequest(userId, connectionId) {
@@ -49,6 +68,13 @@ const ConnectionService = {
         }
 
         await ConnectionRepository.updateStatus(connectionId, "ACCEPTED");
+
+        await NotificationService.notifyConnectionAccepted({
+            accepterId: userId,
+            senderId: connection.sender_id,
+            connectionId: connection.id,
+        });
+        await NotificationService.markConnectionRequestHandled(connection.id);
 
         return true;
     },
@@ -71,6 +97,8 @@ const ConnectionService = {
 
         await ConnectionRepository.updateStatus(connectionId, "REJECTED");
 
+        await NotificationService.markConnectionRequestHandled(connection.id);
+
         return true;
     },
 
@@ -91,6 +119,8 @@ const ConnectionService = {
         }
 
         await ConnectionRepository.updateStatus(connectionId, "CANCELLED");
+
+        await NotificationService.removeConnectionRequest(connection.id);
 
         return true;
     },

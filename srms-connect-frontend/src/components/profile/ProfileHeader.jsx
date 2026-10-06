@@ -4,6 +4,8 @@ import ChangePhotoModal from "./ChangePhotoModal";
 import PhotoMenu from "./PhotoMenu";
 import ConfirmDialog from "../ui/ConfirmDialog";
 import { BuildingIcon, LocationIcon } from "./icons";
+import VerifiedBadge from "../ui/VerifiedBadge";
+import { academicLine, isVerifiedAlumni } from "../../utils/personFormat";
 
 export default function ProfileHeader({
   profile,
@@ -129,6 +131,10 @@ export default function ProfileHeader({
             >
               {full_name || "Unnamed Student"}
             </h1>
+            {isVerifiedAlumni(profile) && <VerifiedBadge className="mt-1.5" />}
+            {academicLine(profile) && (
+              <p className="mt-1 text-sm text-[#1B2438]/55">{academicLine(profile)}</p>
+            )}
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#1B2438]/70">
               {(designation || company) && (
                 <span className="flex items-center gap-1.5">

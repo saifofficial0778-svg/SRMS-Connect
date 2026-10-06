@@ -11,6 +11,7 @@ import ProfileHeader from "../../components/profile/ProfileHeader";
 import BasicInfoCard from "../../components/profile/BasicInfoCard";
 import SocialLinks from "../../components/profile/SocialLinks";
 import SkillsSection from "../../components/profile/SkillsSection";
+import OpenToSection from "../../components/profile/OpenToSection";
 import ProjectsSection from "../../components/profile/ProjectsSection";
 import EditProfileModal from "../../components/profile/EditProfileModal";
 import ProfileSkeleton from "../../components/profile/ProfileSkeleton";
@@ -117,6 +118,12 @@ export default function Profile() {
 
         <div className="grid md:grid-cols-[1.1fr_1fr] gap-5 items-start">
           <div className="space-y-5">
+            <OpenToSection
+              role={profile.role}
+              intents={profile.open_to || []}
+              onSaved={(open_to) => setProfile((prev) => ({ ...prev, open_to }))}
+              showToast={showToast}
+            />
             <SkillsSection
               skills={skills}
               setSkills={setSkills}

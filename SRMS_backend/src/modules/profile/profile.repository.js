@@ -7,23 +7,28 @@ const ProfileRepository = {
         const [result] = await pool.execute(
             `
         SELECT
-            id,
-            user_id,
-            full_name,
-            profile_photo,
-            bio,
-            location,
-            linkedin_url,
-            github_url,
-            portfolio_url,
-            resume_url,
-            company,
-            designation,
-            experience_years,
-            interests,
-            career_goals
-        FROM profiles
-        WHERE user_id = ?
+            p.id,
+            p.user_id,
+            p.full_name,
+            p.profile_photo,
+            p.bio,
+            p.location,
+            p.linkedin_url,
+            p.github_url,
+            p.portfolio_url,
+            p.resume_url,
+            p.company,
+            p.designation,
+            p.experience_years,
+            p.interests,
+            p.career_goals,
+            p.branch,
+            p.batch_year,
+            u.role,
+            (u.role = 'ALUMNI') AS is_verified_alumni
+        FROM profiles p
+        JOIN users u ON u.id = p.user_id
+        WHERE p.user_id = ?
         LIMIT 1
         `,
             [userId]
@@ -57,11 +62,43 @@ const ProfileRepository = {
             [profile.id]
         );
 
+        const open_to = await ProfileRepository.findOpenTo(profile.id);
+
         return {
             ...profile,
             skills,
-            projects
+            projects,
+            open_to
         };
+    },
+
+    async findOpenTo(profileId) {
+        const [rows] = await pool.execute(
+            `SELECT intent FROM profile_open_to WHERE profile_id = ? ORDER BY id ASC`,
+            [profileId]
+        );
+        return (rows || []).map((r) => r.intent);
+    },
+
+    // Replaces the whole set in one transaction so a failure can't leave half of it saved.
+    async replaceOpenTo(profileId, intents) {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+            await connection.execute(`DELETE FROM profile_open_to WHERE profile_id = ?`, [profileId]);
+            for (const intent of intents) {
+                await connection.execute(
+                    `INSERT INTO profile_open_to (profile_id, intent) VALUES (?, ?)`,
+                    [profileId, intent]
+                );
+            }
+            await connection.commit();
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     },
 
     async updateProfile(userId, profileData) {
@@ -203,26 +240,35 @@ const ProfileRepository = {
         const [result] = await pool.execute(
             `
         SELECT
-            id,
-            user_id,
-            full_name,
-            profile_photo,
-            bio,
-            location,
-            linkedin_url,
-            github_url,
-            portfolio_url,
-            company,
-            designation,
-            experience_years
-        FROM profiles
-        WHERE user_id = ?
+            p.id,
+            p.user_id,
+            p.full_name,
+            p.profile_photo,
+            p.bio,
+            p.location,
+            p.linkedin_url,
+            p.github_url,
+            p.portfolio_url,
+            p.company,
+            p.designation,
+            p.experience_years,
+            p.branch,
+            p.batch_year,
+            u.role,
+            (u.role = 'ALUMNI') AS is_verified_alumni
+        FROM profiles p
+        JOIN users u ON u.id = p.user_id
+        WHERE p.user_id = ?
+          AND u.status = 'ACTIVE'
         LIMIT 1
         `,
             [userId]
         );
 
-        return result[0];
+        const profile = result[0];
+        if (!profile) return profile;
+
+        return { ...profile, open_to: await ProfileRepository.findOpenTo(profile.id) };
     },
 
 };

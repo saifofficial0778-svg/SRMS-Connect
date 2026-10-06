@@ -10,13 +10,13 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-async function sendOtpEmail(toEmail, otp) {
+async function sendOtpEmail(toEmail, otp, purpose = "login") {
     await transporter.sendMail({
         from: `"SRMS Connect" <${process.env.SMTP_USER}>`,
         to: toEmail,
-        subject: "Your SRMS Connect Login OTP",
+        subject: `Your SRMS Connect ${purpose === "password reset" ? "Password Reset" : "Login"} OTP`,
         html: `
-            <p>Your OTP for login is:</p>
+            <p>Your OTP for ${purpose} is:</p>
             <h2>${otp}</h2>
             <p>This OTP is valid for 5 minutes. Do not share it with anyone.</p>
         `

@@ -107,6 +107,18 @@ const ProfileController = {
         });
     }),
 
+    updateOpenTo: catchAsync(async (req, res) => {
+        const { userId, role } = req.user;
+
+        const data = await ProfileService.updateOpenTo(userId, role, req.body.intents);
+
+        return res.status(200).json({
+            success: true,
+            message: "Preferences updated successfully",
+            data
+        });
+    }),
+
         getPublicProfile: catchAsync(async (req, res) => {
         const { userId } = req.params;
 

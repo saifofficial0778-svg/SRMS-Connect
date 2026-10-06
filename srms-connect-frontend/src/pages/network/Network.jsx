@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getProfile, getPublicProfileById } from "../../services/profileService";
 import { getOrCreateConversation } from "../../services/chatService";
 import {
@@ -24,8 +24,10 @@ function extractErrorMessage(err, fallback) {
 
 export default function Network() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState("connections");
+  // a connection-request notification opens straight on the Requests tab
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "connections");
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
 

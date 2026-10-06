@@ -13,17 +13,26 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen bg-[#F5F6F8] flex">
       {/* Left brand panel — hidden on small screens */}
-      <div className="hidden lg:flex lg:w-[46%] xl:w-[42%] relative bg-[#1B2438] text-white flex-col justify-between p-12 overflow-hidden">
+      <div
+        className="hidden lg:flex lg:w-[46%] xl:w-[42%] relative text-white flex-col justify-between p-12 overflow-hidden"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 12% 8%, rgba(201,138,43,0.22), transparent 45%), radial-gradient(circle at 90% 95%, rgba(90,120,200,0.30), transparent 50%), linear-gradient(160deg, #2B3A63 0%, #223052 55%, #1B2744 100%)",
+        }}
+      >
         <div
-          className="absolute inset-0 opacity-[0.08]"
+          className="absolute inset-0 opacity-[0.06]"
           style={{
             backgroundImage:
-              "repeating-linear-gradient(135deg, transparent 0 22px, #C98A2B 22px 23px)",
+              "repeating-linear-gradient(135deg, transparent 0 22px, #FFFFFF 22px 23px)",
           }}
         />
 
-        <div className="relative flex flex-col items-start gap-2">
-          <img src={srmsLogo} alt="SRMS Connect" className="h-16 w-auto object-contain" />
+        <div className="relative flex flex-col items-start gap-4">
+          {/* white badge so the red SRMS logo stays clearly visible on the dark panel */}
+          <div className="bg-white rounded-xl px-4 py-3 shadow-lg shadow-black/20">
+            <img src={srmsLogo} alt="SRMS Connect" className="h-14 w-auto object-contain" />
+          </div>
           <span
             className="text-3xl tracking-tight"
             style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}

@@ -1,5 +1,5 @@
 const express = require("express");
-const upload = require("../../middlewares/multerMiddleware");
+const { postMedia, validateUploadedFiles } = require("../../middlewares/multerMiddleware");
 const PostController = require("./post.controller");
 const {validate,validateQuery}=require('../../middlewares/validationMiddleware')
 const {createPostSchema,updatePostSchema,addCommentSchema,updateCommentSchema,feedQuerySchema}=require('./post.validation')
@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get("/feed",verifyToken,validateQuery(feedQuerySchema),PostController.getFeed);
 
-router.post("/",verifyToken,upload.array("media", 5),validate(createPostSchema),PostController.createPost);
+router.post("/",verifyToken,postMedia.array("media", 5),validateUploadedFiles,validate(createPostSchema),PostController.createPost);
 
 router.patch("/:postId",verifyToken,validate(updatePostSchema),PostController.updatePost);
 

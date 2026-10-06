@@ -16,11 +16,13 @@ const ConversationRepository = {
     },
 
     async createConversation(userOneId, userTwoId) {
+        // always store the smaller id first so a pair has one canonical shape
+        const [first, second] = [Number(userOneId), Number(userTwoId)].sort((a, b) => a - b);
         const [result] = await pool.execute(
             `INSERT INTO conversations
                 (user_one_id, user_two_id)
              VALUES (?, ?)`,
-            [userOneId, userTwoId]
+            [first, second]
         );
 
         return result.insertId;
