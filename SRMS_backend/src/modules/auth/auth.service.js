@@ -1,6 +1,6 @@
 const authRepository = require("./auth.repository");
 const AppError = require('../../utils/AppError')
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcrypt')
 const pool = require('../../config/db')
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");

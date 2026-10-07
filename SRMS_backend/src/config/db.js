@@ -6,11 +6,11 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: parseInt(process.env.DB_PORT, 10), // Port ko number me convert karna zaroori hai
+  port: parseInt(process.env.DB_PORT, 10), 
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: Number(process.env.DB_POOL_SIZE) || 30,
   queueLimit: 0,
-  connectTimeout: 20000 // 20 seconds timeout badha diya
+  connectTimeout: 20000 
 });
 
-module.exports = pool.promise(); // Agar async/await use kar rahe ho to
+module.exports = pool.promise(); 

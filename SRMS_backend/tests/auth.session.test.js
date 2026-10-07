@@ -5,7 +5,7 @@ const { test, beforeEach, afterEach, mock } = require("node:test");
 const assert = require("node:assert/strict");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 
 const authRepository = require("../src/modules/auth/auth.repository");
 const AuthService = require("../src/modules/auth/auth.service");

@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcrypt')
 
 function generateOtp() {
     // 6 digit numeric OTP
