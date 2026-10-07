@@ -16,10 +16,10 @@ const TEXT_FIELDS = ["q", "company", "location", "skills", "experience"];
 
 function CardSkeleton() {
   return (
-    <div className="rounded-2xl border border-[#1B2438]/10 bg-white p-5 animate-pulse space-y-3">
-      <div className="h-5 w-1/2 rounded bg-[#1B2438]/10" />
-      <div className="h-3 w-1/3 rounded bg-[#1B2438]/8" />
-      <div className="h-3 w-3/4 rounded bg-[#1B2438]/8" />
+    <div className="card p-5 animate-pulse space-y-3">
+      <div className="h-5 w-1/2 rounded bg-ink/10" />
+      <div className="h-3 w-1/3 rounded bg-ink/8" />
+      <div className="h-3 w-3/4 rounded bg-ink/8" />
     </div>
   );
 }
@@ -108,23 +108,23 @@ export default function JobsPage() {
 
   const tabClass = (active) =>
     `rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-      active ? "bg-white text-[#1B2438] shadow-sm" : "text-[#1B2438]/55 hover:text-[#1B2438]"
+      active ? "bg-white text-ink shadow-sm" : "text-ink/55 hover:text-ink"
     }`;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+    <div className="mx-auto max-w-5xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>
+          <h1 className="text-2xl leading-tight text-ink font-display sm:text-[28px]">
             Jobs
           </h1>
-          <p className="mt-1 text-sm text-[#1B2438]/60">Opportunities posted by verified SRMS alumni.</p>
+          <p className="mt-1 text-sm text-ink/60">Opportunities posted by verified SRMS alumni.</p>
         </div>
 
         {canPost && (
           <Link
             to="/jobs/new"
-            className="rounded-lg bg-[#C98A2B] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#B37A22] transition-colors"
+            className="rounded-lg bg-brand px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition-colors"
           >
             Post a job
           </Link>
@@ -133,7 +133,7 @@ export default function JobsPage() {
 
       {/* only alumni can have jobs of their own */}
       {(canPost || mine) && (
-        <div role="tablist" aria-label="Jobs" className="inline-flex rounded-lg bg-[#1B2438]/5 p-1">
+        <div role="tablist" aria-label="Jobs" className="inline-flex rounded-lg bg-ink/[0.06] p-1">
           <button role="tab" aria-selected={!mine} onClick={() => switchTab("all")} className={tabClass(!mine)}>
             All jobs
           </button>
@@ -145,7 +145,7 @@ export default function JobsPage() {
 
       <JobFilters draft={draft} onChange={handleChange} onClear={handleClear} />
 
-      <div aria-live="polite" className="min-h-5 text-sm text-[#1B2438]/55">
+      <div aria-live="polite" className="min-h-5 text-sm text-ink/55">
         {status === "success" && pagination && (
           <>
             {pagination.total} {pagination.total === 1 ? "job" : "jobs"} found
@@ -160,11 +160,11 @@ export default function JobsPage() {
       )}
 
       {status === "error" && (
-        <div className="rounded-2xl border border-[#1B2438]/10 bg-white py-14 text-center">
-          <p className="font-medium text-[#1B2438]">Couldn't load jobs.</p>
+        <div className="card py-14 text-center">
+          <p className="font-medium text-ink">Couldn't load jobs.</p>
           <button
             onClick={() => setRetryTick((n) => n + 1)}
-            className="mt-4 rounded-lg bg-[#1B2438] px-4 py-2 text-sm text-white hover:bg-[#141B2C]"
+            className="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-600"
           >
             Try again
           </button>
@@ -172,11 +172,11 @@ export default function JobsPage() {
       )}
 
       {status === "success" && jobs.length === 0 && (
-        <div className="rounded-2xl border border-[#1B2438]/10 bg-white py-14 px-6 text-center">
-          <p className="font-medium text-[#1B2438]">
+        <div className="card py-14 px-6 text-center">
+          <p className="font-medium text-ink">
             {mine && !hasAnyJobCriteria(filters) ? "You haven't posted any jobs yet" : "No matching jobs found"}
           </p>
-          <p className="mt-1 text-sm text-[#1B2438]/55">
+          <p className="mt-1 text-sm text-ink/55">
             {hasAnyJobCriteria(filters)
               ? "Try removing a filter or searching for something else."
               : mine
@@ -186,7 +186,7 @@ export default function JobsPage() {
           {hasAnyJobCriteria(filters) && (
             <button
               onClick={handleClear}
-              className="mt-4 rounded-lg border border-[#1B2438]/15 px-4 py-2 text-sm font-medium text-[#1B2438]/70 hover:bg-[#1B2438]/5"
+              className="mt-4 rounded-lg border border-ink/15 px-4 py-2 text-sm font-medium text-ink/70 hover:bg-ink/5"
             >
               Clear filters
             </button>
@@ -207,17 +207,17 @@ export default function JobsPage() {
               <button
                 onClick={() => goToPage(page - 1)}
                 disabled={page <= 1}
-                className="rounded-lg border border-[#1B2438]/15 bg-white px-4 py-2 text-sm font-medium text-[#1B2438]/80 hover:bg-[#1B2438]/5 disabled:opacity-40"
+                className="rounded-lg border border-ink/15 bg-white px-4 py-2 text-sm font-medium text-ink/80 hover:bg-ink/5 disabled:opacity-40"
               >
                 Previous
               </button>
-              <span className="text-sm text-[#1B2438]/60">
+              <span className="text-sm text-ink/60">
                 Page {page} of {totalPages}
               </span>
               <button
                 onClick={() => goToPage(page + 1)}
                 disabled={page >= totalPages}
-                className="rounded-lg border border-[#1B2438]/15 bg-white px-4 py-2 text-sm font-medium text-[#1B2438]/80 hover:bg-[#1B2438]/5 disabled:opacity-40"
+                className="rounded-lg border border-ink/15 bg-white px-4 py-2 text-sm font-medium text-ink/80 hover:bg-ink/5 disabled:opacity-40"
               >
                 Next
               </button>

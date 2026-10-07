@@ -1,37 +1,25 @@
+import { CheckCircle2, AlertCircle, X } from "lucide-react";
+
+// Short confirmations and errors, bottom-right (full width on phones). The icon and the wording
+// carry the meaning; colour only supports it.
 export default function ToastStack({ toasts, onDismiss }) {
   if (!toasts.length) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 left-4 sm:left-auto z-[100] flex flex-col gap-2 sm:w-80">
-      {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          role="status"
-          className={`flex items-start gap-3 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-sm animate-[toastIn_0.2s_ease-out] ${
-            toast.type === "error"
-              ? "bg-[#FBEEEA] border-[#E3B3A4] text-[#8A3521]"
-              : "bg-[#EEF3EF] border-[#B9CFC0] text-[#25412F]"
-          }`}
-        >
-          <span className="mt-0.5 text-base leading-none">
-            {toast.type === "error" ? "!" : "\u2713"}
-          </span>
-          <p className="text-sm leading-snug">{toast.message}</p>
-          <button
-            onClick={() => onDismiss(toast.id)}
-            className="ml-auto text-xs opacity-60 hover:opacity-100"
-            aria-label="Dismiss"
-          >
-            Close
-          </button>
-        </div>
-      ))}
-      <style>{`
-        @keyframes toastIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+    <div className="fixed bottom-20 left-4 right-4 z-[100] flex flex-col gap-2 sm:left-auto sm:w-[22rem] md:bottom-5 md:right-5">
+      {toasts.map((toast) => {
+        const isError = toast.type === "error";
+        const Icon = isError ? AlertCircle : CheckCircle2;
+        return (
+          <div key={toast.id} role={isError ? "alert" : "status"} className="flex items-start gap-3 rounded-lg border border-ink/10 bg-white px-4 py-3 shadow-raised animate-rise">
+            <Icon className={`mt-0.5 h-[18px] w-[18px] shrink-0 ${isError ? "text-danger" : "text-success"}`} strokeWidth={2} aria-hidden="true" />
+            <p className="flex-1 text-sm leading-snug text-ink/90">{toast.message}</p>
+            <button onClick={() => onDismiss(toast.id)} className="-mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded text-ink/40 transition-colors hover:bg-ink/[0.06] hover:text-ink" aria-label="Dismiss">
+              <X className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 }

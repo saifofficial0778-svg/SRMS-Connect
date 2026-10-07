@@ -3,7 +3,7 @@ export default function AuthButton({ loading, loadingText, children, ...props })
     <button
       {...props}
       disabled={loading || props.disabled}
-      className="w-full flex items-center justify-center gap-2 bg-[#C98A2B] text-white py-3 rounded-lg font-medium hover:bg-[#B37A22] active:bg-[#9F6C1E] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+      className="w-full flex items-center justify-center gap-2 bg-brand text-white py-3 rounded-lg font-medium hover:bg-brand-600 active:bg-accent-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
     >
       {loading && (
         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">

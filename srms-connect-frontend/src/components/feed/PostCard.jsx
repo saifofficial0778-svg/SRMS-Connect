@@ -23,7 +23,7 @@ import {
   deletePost,
 } from "../../services/postService";
 
-function ConnectionAction({ info, onConnect, onCancel, onAccept, onReject, onRemove, onMessage }) {
+function ConnectionAction({ info, onConnect, onCancel, onAccept, onReject, onMessage }) {
   const [busy, setBusy] = useState(false);
 
   const run = async (fn) => {
@@ -40,7 +40,7 @@ function ConnectionAction({ info, onConnect, onCancel, onAccept, onReject, onRem
       <button
         onClick={() => run(onMessage)}
         disabled={busy}
-        className="px-3.5 py-1.5 rounded-lg text-xs font-medium border border-[#1B2438]/15 text-[#1B2438] hover:bg-[#1B2438]/5 disabled:opacity-60 transition-colors"
+        className="px-3.5 py-1.5 rounded-lg text-xs font-medium border border-ink/15 text-ink hover:bg-ink/5 disabled:opacity-60 transition-colors"
       >
         Message
       </button>
@@ -52,7 +52,7 @@ function ConnectionAction({ info, onConnect, onCancel, onAccept, onReject, onRem
       <button
         onClick={() => run(onCancel)}
         disabled={busy}
-        className="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-[#1B2438]/5 text-[#1B2438]/60 hover:bg-[#1B2438]/10 disabled:opacity-60 transition-colors"
+        className="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-ink/5 text-ink/60 hover:bg-ink/10 disabled:opacity-60 transition-colors"
       >
         {busy ? "..." : "Pending"}
       </button>
@@ -65,14 +65,14 @@ function ConnectionAction({ info, onConnect, onCancel, onAccept, onReject, onRem
         <button
           onClick={() => run(onReject)}
           disabled={busy}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium border border-[#1B2438]/15 text-[#1B2438]/70 hover:bg-[#1B2438]/5 disabled:opacity-60 transition-colors"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium border border-ink/15 text-ink/70 hover:bg-ink/5 disabled:opacity-60 transition-colors"
         >
           Reject
         </button>
         <button
           onClick={() => run(onAccept)}
           disabled={busy}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#C98A2B] text-white hover:bg-[#B37A22] disabled:opacity-60 transition-colors"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand text-white hover:bg-brand-600 disabled:opacity-60 transition-colors"
         >
           Accept
         </button>
@@ -84,7 +84,7 @@ function ConnectionAction({ info, onConnect, onCancel, onAccept, onReject, onRem
     <button
       onClick={() => run(onConnect)}
       disabled={busy}
-      className="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-[#C98A2B] text-white hover:bg-[#B37A22] disabled:opacity-60 transition-colors"
+      className="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-brand text-white hover:bg-brand-600 disabled:opacity-60 transition-colors"
     >
       {busy ? "Sending..." : "Connect"}
     </button>
@@ -114,37 +114,37 @@ function CommentRow({ comment, isOwn, onSave, onDelete }) {
     <div className="flex gap-2.5">
       <Avatar photoUrl={comment.profile_photo} fullName={comment.full_name} size={30} />
       <div className="flex-1 min-w-0">
-        <div className="bg-[#F5F6F8] rounded-xl px-3.5 py-2 inline-block max-w-full">
-          <p className="text-[13px] font-medium text-[#1B2438]">{comment.full_name}</p>
+        <div className="bg-canvas rounded-lg px-3.5 py-2 inline-block max-w-full">
+          <p className="text-[13px] font-medium text-ink">{comment.full_name}</p>
           {editing ? (
             <textarea
               autoFocus
               value={value}
               onChange={(e) => setValue(e.target.value)}
               rows={2}
-              className="mt-1 w-full text-sm text-[#1B2438] bg-white rounded-md border border-[#1B2438]/15 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#C98A2B]"
+              className="mt-1 w-full text-sm text-ink bg-white rounded-md border border-ink/15 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand"
             />
           ) : (
-            <p className="text-sm text-[#1B2438]/85 whitespace-pre-wrap break-words">
+            <p className="text-sm text-ink/85 whitespace-pre-wrap break-words">
               {comment.content}
             </p>
           )}
         </div>
-        <div className="mt-1 flex items-center gap-3 text-xs text-[#1B2438]/45 px-1">
+        <div className="mt-1 flex items-center gap-3 text-xs text-ink/45 px-1">
           <span>{timeAgo(comment.created_at)}</span>
           {isOwn && !editing && (
             <>
-              <button onClick={() => setEditing(true)} className="hover:text-[#1B2438]">
+              <button onClick={() => setEditing(true)} className="hover:text-ink">
                 Edit
               </button>
-              <button onClick={onDelete} className="hover:text-[#B3432B]">
+              <button onClick={onDelete} className="hover:text-danger">
                 Delete
               </button>
             </>
           )}
           {editing && (
             <>
-              <button disabled={busy} onClick={save} className="font-medium text-[#C98A2B] hover:text-[#B37A22]">
+              <button disabled={busy} onClick={save} className="font-medium text-accent-700 hover:text-accent-800">
                 Save
               </button>
               <button
@@ -153,7 +153,7 @@ function CommentRow({ comment, isOwn, onSave, onDelete }) {
                   setValue(comment.content);
                   setEditing(false);
                 }}
-                className="hover:text-[#1B2438]"
+                className="hover:text-ink"
               >
                 Cancel
               </button>
@@ -231,7 +231,7 @@ export default function PostCard({
       try {
         const res = await getComments(data.id);
         setComments(res?.data || []);
-      } catch (err) {
+      } catch {
         showToast?.("Couldn't load comments.", "error");
         setComments([]);
       } finally {
@@ -312,25 +312,25 @@ export default function PostCard({
   };
 
   return (
-    <article className="rounded-2xl border border-[#1B2438]/10 bg-white p-6 sm:p-7">
+    <article className="card p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
-        <button onClick={goToProfile} className="flex items-center gap-3.5 text-left group min-w-0">
-          <Avatar photoUrl={data.profile_photo} fullName={data.full_name} size={52} />
+        <button onClick={goToProfile} className="group flex min-w-0 items-center gap-3 text-left">
+          <Avatar photoUrl={data.profile_photo} fullName={data.full_name} size={44} />
           <div className="min-w-0">
-            <p className="text-[16px] font-semibold text-[#1B2438] group-hover:text-[#C98A2B] transition-colors truncate">
+            <p className="truncate text-[15px] font-semibold text-ink transition-colors group-hover:text-brand">
               {data.full_name}
             </p>
             {(data.designation || data.company) && (
-              <p className="text-[13px] text-[#1B2438]/60 truncate">
+              <p className="text-[13px] text-ink/60 truncate">
                 {[data.designation, data.company].filter(Boolean).join(" at ")}
               </p>
             )}
             {data.bio && (
-              <p className="text-[13px] text-[#1B2438]/50 mt-0.5 line-clamp-1 max-w-md">
+              <p className="text-[13px] text-ink/50 mt-0.5 line-clamp-1 max-w-md">
                 {data.bio}
               </p>
             )}
-            <p className="text-xs text-[#1B2438]/40 mt-0.5">{timeAgo(data.created_at)}</p>
+            <p className="text-xs text-ink/40 mt-0.5">{timeAgo(data.created_at)}</p>
           </div>
         </button>
 
@@ -351,20 +351,21 @@ export default function PostCard({
             <div className="relative">
               <button
                 onClick={() => setMenuOpen((v) => !v)}
-                className="p-1.5 rounded-full text-[#1B2438]/40 hover:bg-[#1B2438]/5 hover:text-[#1B2438]"
+                aria-label="Post options"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink/45 transition-colors hover:bg-ink/[0.06] hover:text-ink"
               >
                 <DotsIcon />
               </button>
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-1 z-20 w-36 rounded-xl border border-[#1B2438]/10 bg-white shadow-xl overflow-hidden">
+                  <div className="absolute right-0 top-full z-20 mt-1 w-40 overflow-hidden rounded-lg border border-ink/10 bg-white shadow-overlay animate-rise">
                     <button
                       onClick={() => {
                         setMenuOpen(false);
                         setEditingPost(true);
                       }}
-                      className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-[#1B2438] hover:bg-[#1B2438]/5 text-left"
+                      className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-ink hover:bg-ink/5 text-left"
                     >
                       <PencilIcon /> Edit
                     </button>
@@ -373,7 +374,7 @@ export default function PostCard({
                         setMenuOpen(false);
                         setConfirmDeleteOpen(true);
                       }}
-                      className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-[#B3432B] hover:bg-[#B3432B]/5 text-left border-t border-[#1B2438]/5"
+                      className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-danger hover:bg-danger/5 text-left border-t border-ink/5"
                     >
                       <TrashIcon /> Delete
                     </button>
@@ -393,7 +394,7 @@ export default function PostCard({
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               rows={3}
-              className="w-full text-[15px] text-[#1B2438] rounded-lg border border-[#1B2438]/15 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C98A2B]/40"
+              className="w-full text-[15px] text-ink rounded-lg border border-ink/15 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand/40"
             />
             <div className="mt-2 flex justify-end gap-2">
               <button
@@ -401,13 +402,13 @@ export default function PostCard({
                   setEditValue(data.content || "");
                   setEditingPost(false);
                 }}
-                className="px-3 py-1.5 rounded-lg text-sm text-[#1B2438]/70 hover:bg-[#1B2438]/5"
+                className="px-3 py-1.5 rounded-lg text-sm text-ink/70 hover:bg-ink/5"
               >
                 Cancel
               </button>
               <button
                 onClick={savePostEdit}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-[#C98A2B] hover:bg-[#B37A22]"
+                className="px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-brand hover:bg-brand-600"
               >
                 Save
               </button>
@@ -415,7 +416,7 @@ export default function PostCard({
           </div>
         ) : (
           data.content && (
-            <p className="text-[15px] text-[#1B2438]/90 whitespace-pre-wrap break-words">
+            <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed text-ink/90">
               {data.content}
             </p>
           )
@@ -427,10 +428,10 @@ export default function PostCard({
       </div>
 
             {(data.likes_count > 0 || data.comments_count > 0) && (
-        <div className="mt-3 flex items-center gap-1.5 text-xs text-[#1B2438]/50">
+        <div className="mt-3 flex items-center gap-1.5 text-xs text-ink/50">
           {data.likes_count > 0 && (
             <span className="flex items-center gap-1">
-              <ThumbsUpIcon filled className="h-3.5 w-3.5 text-[#C98A2B]" />
+              <ThumbsUpIcon filled className="h-3.5 w-3.5 text-accent-700" />
               {data.likes_count}
             </span>
           )}
@@ -441,11 +442,11 @@ export default function PostCard({
         </div>
       )}
 
-            <div className="mt-2 pt-2 border-t border-[#1B2438]/10 flex items-center gap-1">
+            <div className="mt-2 pt-2 border-t border-ink/10 flex items-center gap-1">
         <button
           onClick={toggleLike}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            data.is_liked ? "text-[#C98A2B]" : "text-[#1B2438]/60 hover:bg-[#1B2438]/5"
+            data.is_liked ? "text-accent-700" : "text-ink/60 hover:bg-ink/5"
           }`}
         >
           <ThumbsUpIcon filled={data.is_liked} />
@@ -453,7 +454,7 @@ export default function PostCard({
         </button>
         <button
           onClick={openComments}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#1B2438]/60 hover:bg-[#1B2438]/5"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-ink/60 hover:bg-ink/5"
         >
           <CommentIcon />
           Comment
@@ -461,9 +462,9 @@ export default function PostCard({
       </div>
 
       {commentsOpen && (
-        <div className="mt-3 pt-3 border-t border-[#1B2438]/10 space-y-3">
+        <div className="mt-3 pt-3 border-t border-ink/10 space-y-3">
           {loadingComments && (
-            <p className="text-sm text-[#1B2438]/50">Loading comments...</p>
+            <p className="text-sm text-ink/50">Loading comments...</p>
           )}
           {!loadingComments &&
             comments?.map((comment) => (
@@ -476,7 +477,7 @@ export default function PostCard({
               />
             ))}
           {!loadingComments && comments?.length === 0 && (
-            <p className="text-sm text-[#1B2438]/40">No comments yet. Be the first to say something.</p>
+            <p className="text-sm text-ink/40">No comments yet. Be the first to say something.</p>
           )}
 
           <form onSubmit={submitComment} className="flex items-center gap-2 pt-1">
@@ -485,12 +486,12 @@ export default function PostCard({
               value={commentDraft}
               onChange={(e) => setCommentDraft(e.target.value)}
               placeholder="Write a comment..."
-              className="flex-1 text-sm rounded-full border border-[#1B2438]/15 px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-[#C98A2B]/40"
+              className="flex-1 text-sm rounded-full border border-ink/15 px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-brand/40"
             />
             <button
               type="submit"
               disabled={postingComment || !commentDraft.trim()}
-              className="h-9 w-9 shrink-0 rounded-full bg-[#C98A2B] text-white flex items-center justify-center disabled:opacity-40 hover:bg-[#B37A22]"
+              className="h-9 w-9 shrink-0 rounded-full bg-brand text-white flex items-center justify-center disabled:opacity-40 hover:bg-brand-600"
             >
               <SendIcon />
             </button>

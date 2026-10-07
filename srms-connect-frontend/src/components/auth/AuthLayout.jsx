@@ -1,117 +1,63 @@
+import { BadgeCheck } from "lucide-react";
 import srmsLogo from "../../assets/srms.png";
 
-
-
-export default function AuthLayout({
-  heading,
-  tagline,
-  features = [],
-  cardTitle,
-  cardSubtitle,
-  children,
-}) {
+// Sign-in, registration and password pages share this frame: the brand on the left (large
+// screens), one focused form on the right. No decoration competes with the form.
+export default function AuthLayout({ heading, tagline, features = [], cardTitle, cardSubtitle, children }) {
   return (
-    <div className="min-h-screen bg-[#F5F6F8] flex">
-      {/* Left brand panel — hidden on small screens */}
-      <div
-        className="hidden lg:flex lg:w-[46%] xl:w-[42%] relative text-white flex-col justify-between p-12 overflow-hidden"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 12% 8%, rgba(201,138,43,0.22), transparent 45%), radial-gradient(circle at 90% 95%, rgba(90,120,200,0.30), transparent 50%), linear-gradient(160deg, #2B3A63 0%, #223052 55%, #1B2744 100%)",
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(135deg, transparent 0 22px, #FFFFFF 22px 23px)",
-          }}
-        />
+    <div className="flex min-h-screen bg-canvas">
+      <aside className="relative hidden w-[44%] max-w-xl flex-col justify-between overflow-hidden bg-brand-700 p-12 text-white lg:flex">
+        {/* a quiet dot grid: texture, not decoration */}
+        <div className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:22px_22px]" aria-hidden="true" />
+        <div className="absolute inset-y-0 right-0 w-px bg-accent/50" aria-hidden="true" />
 
-        <div className="relative flex flex-col items-start gap-4">
-          {/* white badge so the red SRMS logo stays clearly visible on the dark panel */}
-          <div className="bg-white rounded-xl px-4 py-3 shadow-lg shadow-black/20">
-            <img src={srmsLogo} alt="SRMS Connect" className="h-14 w-auto object-contain" />
-          </div>
-          <span
-            className="text-3xl tracking-tight"
-            style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-          >
-            SRMS Connect
-          </span>
+        <div className="relative flex items-center gap-3.5">
+          {/* a white tile keeps the red SRMS mark legible on the dark panel */}
+          <span className="rounded-lg bg-white px-3 py-2 shadow-raised"><img src={srmsLogo} alt="" className="h-11 w-auto object-contain" /></span>
+          <span className="text-xl font-display">SRMS <span className="text-accent">Connect</span></span>
         </div>
 
-        <div className="relative max-w-sm">
-          <h2
-            className="text-3xl leading-tight"
-            style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-          >
-            {heading}
-          </h2>
-          {tagline && (
-            <p className="mt-3 text-white/70 text-[15px] leading-relaxed">
-              {tagline}
-            </p>
-          )}
+        <div className="relative max-w-md">
+          <p className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/85">
+            <BadgeCheck className="h-3.5 w-3.5 text-accent" strokeWidth={2} aria-hidden="true" />
+            Verified alumni network
+          </p>
+          <h2 className="text-[32px] leading-[1.15] font-display">{heading}</h2>
+          {tagline && <p className="mt-4 text-[15px] leading-relaxed text-white/70">{tagline}</p>}
 
           {features.length > 0 && (
-            <div className="mt-10 space-y-4">
+            <ul className="mt-9 space-y-4">
               {features.map((f, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-[#C98A2B]">
-                    {f.icon}
-                  </span>
+                <li key={i} className="flex items-center gap-3.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-accent">{f.icon}</span>
                   <span className="text-sm text-white/85">{f.text}</span>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
 
-        <p className="relative text-xs text-white/40">
-          &copy; {new Date().getFullYear()} SRMS Connect
-        </p>
-      </div>
+        <p className="relative text-xs text-white/45">&copy; {new Date().getFullYear()} SRMS Connect</p>
+      </aside>
 
-      {/* Right form panel */}
-      <div className="flex-1 flex items-center justify-center px-4 py-10 sm:py-16">
-        <div className="w-full max-w-md animate-[authFadeIn_0.35s_ease-out]">
-          {/* mobile-only brand mark */}
-          <div className="lg:hidden flex flex-col items-center gap-2 mb-8">
-            <img src={srmsLogo} alt="SRMS Connect" className="h-16 w-auto object-contain" />
-            <span
-              className="text-lg text-[#1B2438]"
-              style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-            >
-              SRMS Connect
-            </span>
+      <main className="flex flex-1 items-center justify-center px-4 py-10 sm:py-16">
+        <div className="w-full max-w-[26rem] animate-rise">
+          <div className="mb-8 flex flex-col items-center gap-2.5 lg:hidden">
+            <img src={srmsLogo} alt="" className="h-14 w-auto object-contain" />
+            <span className="text-lg text-ink font-display">SRMS <span className="text-accent-700">Connect</span></span>
           </div>
 
-          <div className="bg-white rounded-2xl border border-[#1B2438]/10 p-7 sm:p-9 shadow-sm">
-            <div className="mb-7">
-              <h1
-                className="text-2xl text-[#1B2438]"
-                style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-              >
-                {cardTitle}
-              </h1>
-              {cardSubtitle && (
-                <p className="mt-1.5 text-sm text-[#1B2438]/60">
-                  {cardSubtitle}
-                </p>
-              )}
+          <div className="card p-6 shadow-raised sm:p-8">
+            <div className="mb-6">
+              <h1 className="text-2xl text-ink font-display">{cardTitle}</h1>
+              {cardSubtitle && <p className="mt-1.5 text-sm text-ink/60">{cardSubtitle}</p>}
             </div>
             {children}
           </div>
-        </div>
-      </div>
 
-      <style>{`
-        @keyframes authFadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+          <p className="mt-6 text-center text-xs text-ink/45">Only members whose enrollment is in the college records can join.</p>
+        </div>
+      </main>
     </div>
   );
 }

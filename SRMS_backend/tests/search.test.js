@@ -18,10 +18,12 @@ const searchRoutes = require("../src/modules/search/search.route");
 const globalErrorHandler = require("../src/middlewares/errorMiddleware");
 
 const stubSkills = require("./helpers/stubSkills");
+const stubAnalytics = require("./helpers/stubAnalytics");
 
 // the service also loads each result's "Open to" intents; never let a test reach the real database
 beforeEach(() => {
     stubSkills(mock);
+    stubAnalytics(mock);
     mock.method(SearchRepository, "findOpenToForProfiles", async () => ({}));
 });
 afterEach(() => mock.restoreAll());

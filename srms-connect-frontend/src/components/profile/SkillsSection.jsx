@@ -36,24 +36,23 @@ export default function SkillsSection({ skills, setSkills, showToast }) {
   };
 
   return (
-    <section className="rounded-2xl border border-[#1B2438]/10 bg-white p-5 sm:p-6">
+    <section className="card p-5 sm:p-6">
       <div className="flex items-center justify-between">
         <h2
-          className="text-lg text-[#1B2438] border-l-4 border-[#3F6B52] pl-3"
-          style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
+          className="text-lg text-ink border-l-4 border-success pl-3 font-display"
         >
           Skills
         </h2>
         <button
           onClick={() => setModalOpen(true)}
-          className="text-sm font-medium text-[#C98A2B] hover:text-[#B37A22]"
+          className="text-sm font-medium text-accent-700 hover:text-accent-800"
         >
           + Add skill
         </button>
       </div>
 
       {skills.length === 0 ? (
-        <p className="mt-4 text-sm text-[#1B2438]/50">
+        <p className="mt-4 text-sm text-ink/50">
           No skills added yet.
         </p>
       ) : (
@@ -61,13 +60,13 @@ export default function SkillsSection({ skills, setSkills, showToast }) {
           {skills.map((s) => (
             <span
               key={s.id}
-              className="group flex items-center gap-2 rounded-full bg-[#3F6B52]/8 border border-[#3F6B52]/20 pl-3.5 pr-2 py-1.5 text-sm text-[#25412F]"
+              className="group flex items-center gap-2 rounded-full bg-success/8 border border-success/20 pl-3.5 pr-2 py-1.5 text-sm text-success-700"
             >
               {s.skill}
               <button
                 onClick={() => setPendingDelete(s)}
                 aria-label={`Remove ${s.skill}`}
-                className="h-4 w-4 flex items-center justify-center rounded-full text-[#25412F]/50 hover:bg-[#25412F]/10 hover:text-[#25412F]"
+                className="h-4 w-4 flex items-center justify-center rounded-full text-success-700/50 hover:bg-success-700/10 hover:text-success-700"
               >
                 &times;
               </button>

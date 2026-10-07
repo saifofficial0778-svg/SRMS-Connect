@@ -16,6 +16,7 @@ const TYPES = {
     MENTORSHIP_UPDATE: "MENTORSHIP_UPDATE",
     INTRO_REQUEST: "INTRO_REQUEST",
     INTRO_UPDATE: "INTRO_UPDATE",
+    PROFILE_VIEW: "PROFILE_VIEW",
 };
 
 // extra for career notifications: "<request type>|<status>|<what it is about>", e.g.

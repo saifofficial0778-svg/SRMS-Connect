@@ -5,6 +5,7 @@ import { getOrCreateConversation } from "../../services/chatService";
 import Avatar from "../../components/profile/Avatar";
 import VerifiedBadge from "../../components/ui/VerifiedBadge";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import Timeline from "../../components/ui/Timeline";
 import StatusBadge from "../../components/career/StatusBadge";
 import useToast from "../../hooks/useToast";
 import ToastStack from "../../components/ui/Toast";
@@ -22,9 +23,9 @@ import {
 } from "../../utils/careerFormat";
 
 const BUTTON_TONES = {
-  primary: "bg-[#C98A2B] text-white hover:bg-[#B37A22]",
-  danger: "border border-red-200 text-red-600 hover:bg-red-50",
-  secondary: "border border-[#1B2438]/15 text-[#1B2438]/80 hover:bg-[#1B2438]/5",
+  primary: "bg-brand text-white hover:bg-brand-600",
+  danger: "border border-danger-200 text-danger hover:bg-danger-50",
+  secondary: "border border-ink/15 text-ink/80 hover:bg-ink/5",
 };
 
 export default function CareerRequestPage() {
@@ -117,10 +118,10 @@ export default function CareerRequestPage() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8" aria-busy="true">
-        <div className="rounded-2xl border border-[#1B2438]/10 bg-white p-8 animate-pulse space-y-3">
-          <div className="h-6 w-2/3 rounded bg-[#1B2438]/10" />
-          <div className="h-4 w-1/3 rounded bg-[#1B2438]/8" />
-          <div className="h-20 w-full rounded bg-[#1B2438]/5" />
+        <div className="card p-8 animate-pulse space-y-3">
+          <div className="h-6 w-2/3 rounded bg-ink/10" />
+          <div className="h-4 w-1/3 rounded bg-ink/8" />
+          <div className="h-20 w-full rounded bg-ink/5" />
         </div>
       </div>
     );
@@ -129,8 +130,8 @@ export default function CareerRequestPage() {
   if (error || !request) {
     return (
       <div className="max-w-md mx-auto mt-16 text-center px-4">
-        <p className="font-medium text-[#1B2438]">{error || "This request isn't available."}</p>
-        <Link to="/career" className="mt-4 inline-block rounded-lg bg-[#1B2438] px-4 py-2 text-sm text-white hover:bg-[#141B2C]">
+        <p className="font-medium text-ink">{error || "This request isn't available."}</p>
+        <Link to="/career" className="mt-4 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-600">
           Back to career help
         </Link>
       </div>
@@ -144,19 +145,19 @@ export default function CareerRequestPage() {
   const activeMeta = activeAction ? actionMeta(activeAction, request.type) : null;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-5">
-      <Link to="/career" className="text-sm font-medium text-[#C98A2B] hover:text-[#B37A22]">
+    <div className="mx-auto max-w-3xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
+      <Link to="/career" className="text-sm font-medium text-accent-700 hover:text-accent-800">
         &larr; Career help
       </Link>
 
-      <article className="rounded-2xl border border-[#1B2438]/10 bg-white p-6 sm:p-8">
+      <article className="card p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#1B2438]/45">{meta.label}</p>
-            <h1 className="mt-1 text-2xl text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink/45">{meta.label}</p>
+            <h1 className="mt-1 text-2xl text-ink font-display">
               {requestTitle(request)}
             </h1>
-            <p className="mt-1 text-sm text-[#1B2438]/50">Sent {timeAgo(request.created_at)}</p>
+            <p className="mt-1 text-sm text-ink/50">Sent {timeAgo(request.created_at)}</p>
           </div>
           <StatusBadge status={request.status} />
         </div>
@@ -165,45 +166,45 @@ export default function CareerRequestPage() {
         <Link to={`/profile/${other.user_id}`} className="mt-5 flex items-center gap-3">
           <Avatar photoUrl={other.profile_photo} fullName={other.full_name} size={44} />
           <span className="min-w-0">
-            <span className="flex flex-wrap items-center gap-2 font-medium text-[#1B2438]">
+            <span className="flex flex-wrap items-center gap-2 font-medium text-ink">
               {other.full_name}
               {request.direction === "sent" && other.is_verified_alumni && <VerifiedBadge />}
             </span>
-            <span className="block text-sm text-[#1B2438]/60">
+            <span className="block text-sm text-ink/60">
               {headline(other) || (request.direction === "received" ? [other.branch, other.batch_year && `Batch ${other.batch_year}`].filter(Boolean).join(" · ") : "")}
             </span>
           </span>
         </Link>
 
         {request.job && (
-          <section className="mt-6 rounded-xl bg-[#1B2438]/[0.03] px-4 py-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-[#1B2438]/45">Job</h2>
+          <section className="mt-6 rounded-lg bg-ink/[0.03] px-4 py-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-ink/45">Job</h2>
             {request.job.status === "DELETED" ? (
-              <p className="mt-1 text-sm text-[#1B2438]/70">{jobLine(request.job)} (no longer available)</p>
+              <p className="mt-1 text-sm text-ink/70">{jobLine(request.job)} (no longer available)</p>
             ) : (
-              <Link to={`/jobs/${request.job.id}`} className="mt-1 block text-sm font-medium text-[#1B2438] hover:text-[#9F6C1E]">
+              <Link to={`/jobs/${request.job.id}`} className="mt-1 block text-sm font-medium text-ink hover:text-accent-700">
                 {jobLine(request.job)}
                 {request.job.location ? ` · ${request.job.location}` : ""}
-                {request.job.status === "CLOSED" && <span className="font-normal text-[#1B2438]/45"> (closed)</span>}
+                {request.job.status === "CLOSED" && <span className="font-normal text-ink/45"> (closed)</span>}
               </Link>
             )}
           </section>
         )}
 
         <section className="mt-6">
-          <h2 className="text-sm font-semibold text-[#1B2438]">{request.direction === "sent" ? "Your note" : meta.messageLabel}</h2>
+          <h2 className="text-sm font-semibold text-ink">{request.direction === "sent" ? "Your note" : meta.messageLabel}</h2>
           {/* user-written text is always rendered as text, never as HTML */}
-          <p className="mt-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-[#1B2438]/80">{request.message}</p>
+          <p className="mt-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-ink/80">{request.message}</p>
         </section>
 
         {request.resume_url && isSafeHttpsUrl(request.resume_url) && (
           <section className="mt-5">
-            <h2 className="text-sm font-semibold text-[#1B2438]">Resume</h2>
+            <h2 className="text-sm font-semibold text-ink">Resume</h2>
             <a
               href={request.resume_url}
               target="_blank"
               rel="noopener noreferrer nofollow"
-              className="mt-1 inline-block break-all text-sm font-medium text-[#C98A2B] hover:text-[#B37A22]"
+              className="mt-1 inline-block break-all text-sm font-medium text-accent-700 hover:text-accent-800"
             >
               Open resume ({new URL(request.resume_url).hostname})
             </a>
@@ -211,17 +212,17 @@ export default function CareerRequestPage() {
         )}
 
         {request.response && (
-          <section className="mt-6 border-l-2 border-[#C98A2B]/50 pl-4">
-            <h2 className="text-sm font-semibold text-[#1B2438]">
+          <section className="mt-6 border-l-2 border-accent/50 pl-4">
+            <h2 className="text-sm font-semibold text-ink">
               {request.type === "QUESTION" && request.status === "ANSWERED" ? "Answer" : "Reply"} from {request.alumni.full_name}
             </h2>
-            <p className="mt-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-[#1B2438]/80">{request.response}</p>
+            <p className="mt-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-ink/80">{request.response}</p>
           </section>
         )}
 
         {/* actions the server says are possible for this viewer right now */}
         {(alumniActions.length > 0 || canCancel) && !activeAction && (
-          <div className="mt-7 flex flex-wrap items-center gap-3 border-t border-[#1B2438]/8 pt-5">
+          <div className="mt-7 flex flex-wrap items-center gap-3 border-t border-ink/8 pt-5">
             {alumniActions.map((action) => {
               const m = actionMeta(action, request.type);
               return (
@@ -248,9 +249,9 @@ export default function CareerRequestPage() {
         )}
 
         {activeAction && (
-          <form onSubmit={submitAction} className="mt-7 border-t border-[#1B2438]/8 pt-5" noValidate>
+          <form onSubmit={submitAction} className="mt-7 border-t border-ink/8 pt-5" noValidate>
             <label className="block">
-              <span className="mb-1 block text-sm font-medium text-[#1B2438]">{activeMeta.responseLabel}</span>
+              <span className="mb-1 block text-sm font-medium text-ink">{activeMeta.responseLabel}</span>
               <textarea
                 value={responseText}
                 onChange={(e) => {
@@ -260,11 +261,11 @@ export default function CareerRequestPage() {
                 rows={activeAction === "ANSWER" ? 6 : 3}
                 maxLength={2000}
                 autoFocus
-                className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#1B2438] focus:outline-none focus:ring-2 focus:ring-[#C98A2B]/20 ${
-                  responseError ? "border-red-300" : "border-[#1B2438]/15 focus:border-[#C98A2B]/60"
+                className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand/20 ${
+                  responseError ? "border-red-300" : "border-ink/15 focus:border-brand/60"
                 }`}
               />
-              {responseError && <span role="alert" className="mt-1 block text-xs text-red-600">{responseError}</span>}
+              {responseError && <span role="alert" className="mt-1 block text-xs text-danger">{responseError}</span>}
             </label>
             <div className="mt-3 flex items-center justify-end gap-3">
               <button type="button" onClick={() => setActiveAction(null)} disabled={busy} className={`rounded-lg px-4 py-2 text-sm font-medium ${BUTTON_TONES.secondary}`}>
@@ -285,18 +286,7 @@ export default function CareerRequestPage() {
         </button>
       </div>
 
-      <section className="rounded-2xl border border-[#1B2438]/10 bg-white p-5 sm:p-6">
-        <h2 className="text-sm font-semibold text-[#1B2438]">History</h2>
-        <ol className="mt-3 space-y-3">
-          {request.history.map((entry, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm">
-              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#C98A2B]" aria-hidden="true" />
-              <span className="flex-1 text-[#1B2438]/80">{historyLabel(entry, request)}</span>
-              <span className="text-xs text-[#1B2438]/45">{timeAgo(entry.at)}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
+      <Timeline items={request.history.map((entry) => ({ label: historyLabel(entry, request), note: entry.note, time: timeAgo(entry.at) }))} />
 
       <ConfirmDialog
         open={confirmCancel}

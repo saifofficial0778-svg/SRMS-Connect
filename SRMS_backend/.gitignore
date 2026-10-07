@@ -2,3 +2,6 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# test-data seed: report (test logins) and database backups (contain password hashes)
+seed-output/

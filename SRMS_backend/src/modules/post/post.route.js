@@ -9,6 +9,9 @@ const router = express.Router();
 
 router.get("/feed",verifyToken,validateQuery(feedQuerySchema),PostController.getFeed);
 
+// the signed-in member's own posts (for their profile). There is deliberately no user id here.
+router.get("/mine",verifyToken,validateQuery(feedQuerySchema),PostController.getMyPosts);
+
 router.post("/",verifyToken,postMedia.array("media", 5),validateUploadedFiles,validate(createPostSchema),PostController.createPost);
 
 router.patch("/:postId",verifyToken,validate(updatePostSchema),PostController.updatePost);

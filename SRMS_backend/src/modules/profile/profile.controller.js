@@ -122,7 +122,7 @@ const ProfileController = {
         getPublicProfile: catchAsync(async (req, res) => {
         const { userId } = req.params;
 
-        const profile = await ProfileService.getPublicProfile(userId);
+        const profile = await ProfileService.getPublicProfile(userId, { userId: req.user.userId, role: req.user.role });
 
         return res.status(200).json({
             success: true,

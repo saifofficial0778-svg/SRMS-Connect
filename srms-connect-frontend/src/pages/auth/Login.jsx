@@ -158,13 +158,13 @@ export default function Login() {
       cardSubtitle="Log in to continue to SRMS Connect"
     >
       {/* Mode toggle */}
-      <div className="flex mb-6 rounded-lg bg-[#1B2438]/5 p-1">
+      <div className="flex mb-6 rounded-lg bg-ink/5 p-1">
         <button
           type="button"
           onClick={() => switchMode("password")}
           className={`flex-1 text-sm font-medium py-2 rounded-md transition ${mode === "password"
-              ? "bg-white shadow text-[#1B2438]"
-              : "text-[#1B2438]/60"
+              ? "bg-white shadow text-ink"
+              : "text-ink/60"
             }`}
         >
           Password
@@ -172,7 +172,7 @@ export default function Login() {
         <button
           type="button"
           onClick={() => switchMode("otp")}
-          className={`flex-1 text-sm font-medium py-2 rounded-md transition ${mode === "otp" ? "bg-white shadow text-[#1B2438]" : "text-[#1B2438]/60"
+          className={`flex-1 text-sm font-medium py-2 rounded-md transition ${mode === "otp" ? "bg-white shadow text-ink" : "text-ink/60"
             }`}
         >
           OTP Login
@@ -199,12 +199,12 @@ export default function Login() {
             autoComplete="current-password"
           />
 
-          {fieldError && <p className="text-xs text-[#B3432B] -mt-1">{fieldError}</p>}
+          {fieldError && <p className="text-xs text-danger -mt-1">{fieldError}</p>}
 
           <div className="flex justify-end">
             <Link
               to="/forgot-password"
-              className="text-sm text-[#C98A2B] hover:text-[#B37A22] font-medium"
+              className="text-sm text-accent-700 hover:text-accent-800 font-medium"
             >
               Forgot password?
             </Link>
@@ -228,7 +228,7 @@ export default function Login() {
             autoComplete="username"
           />
 
-          {fieldError && <p className="text-xs text-[#B3432B] -mt-1">{fieldError}</p>}
+          {fieldError && <p className="text-xs text-danger -mt-1">{fieldError}</p>}
 
           <AuthButton type="submit" loading={loading} loadingText="Sending OTP...">
             Send OTP
@@ -239,9 +239,9 @@ export default function Login() {
       {/* OTP mode — step 2: verify */}
       {mode === "otp" && otpStep === "verify" && (
         <form onSubmit={handleVerifyOtp} className="space-y-4" noValidate>
-          <p className="text-sm text-[#1B2438]/60 -mt-1">
+          <p className="text-sm text-ink/60 -mt-1">
             OTP sent to the email linked with{" "}
-            <span className="font-medium text-[#1B2438]">{enrollment}</span>
+            <span className="font-medium text-ink">{enrollment}</span>
           </p>
 
           <AuthInput
@@ -252,13 +252,13 @@ export default function Login() {
             autoComplete="one-time-code"
           />
 
-          {fieldError && <p className="text-xs text-[#B3432B] -mt-1">{fieldError}</p>}
+          {fieldError && <p className="text-xs text-danger -mt-1">{fieldError}</p>}
 
           <div className="flex justify-between items-center text-sm">
             <button
               type="button"
               onClick={() => setOtpStep("enrollment")}
-              className="text-[#1B2438]/60 hover:text-[#1B2438]"
+              className="text-ink/60 hover:text-ink"
             >
               Change enrollment
             </button>
@@ -266,7 +266,7 @@ export default function Login() {
               type="button"
               onClick={handleResend}
               disabled={resendTimer > 0 || loading}
-              className="text-[#C98A2B] hover:text-[#B37A22] font-medium disabled:text-[#1B2438]/30"
+              className="text-accent-700 hover:text-accent-800 font-medium disabled:text-ink/30"
             >
               {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
             </button>
@@ -278,9 +278,9 @@ export default function Login() {
         </form>
       )}
 
-      <p className="text-center text-sm text-[#1B2438]/60 mt-6">
+      <p className="text-center text-sm text-ink/60 mt-6">
         New to SRMS Connect?{" "}
-        <Link to="/register" className="text-[#C98A2B] hover:text-[#B37A22] font-medium">
+        <Link to="/register" className="text-accent-700 hover:text-accent-800 font-medium">
           Create an account
         </Link>
       </p>

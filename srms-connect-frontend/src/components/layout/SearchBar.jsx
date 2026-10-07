@@ -42,7 +42,7 @@ export default function SearchBar({ autoFocus = false, onClose, className = "" }
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
       <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#1B2438]/35">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35">
           <SearchIcon className="w-4 h-4" />
         </span>
         <input
@@ -51,15 +51,15 @@ export default function SearchBar({ autoFocus = false, onClose, className = "" }
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
-          placeholder="Search people, posts..."
+          placeholder="Search people and posts"
           aria-label="Search SRMS Connect"
-          className="w-full pl-10 pr-9 py-2 rounded-full bg-[#1B2438]/5 border border-transparent text-sm text-[#1B2438] placeholder:text-[#1B2438]/40 focus:outline-none focus:bg-white focus:border-[#C98A2B]/40 focus:ring-2 focus:ring-[#C98A2B]/20 transition-colors"
+          className="h-9 w-full rounded-lg border border-transparent bg-ink/[0.06] pl-10 pr-9 text-sm text-ink placeholder:text-ink/45 transition-colors hover:bg-ink/[0.08] focus:border-brand/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand/10"
         />
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#1B2438]/40 hover:text-[#1B2438]/70"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/70"
             aria-label="Close search"
           >
             <CloseIcon className="w-4 h-4" />

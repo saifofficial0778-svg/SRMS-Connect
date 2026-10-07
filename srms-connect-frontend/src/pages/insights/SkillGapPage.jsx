@@ -16,7 +16,7 @@ import {
 } from "../../utils/insightFormat";
 
 const inputClass =
-  "w-full rounded-lg border border-[#1B2438]/15 bg-white px-3 py-2 text-sm text-[#1B2438] placeholder:text-[#1B2438]/35 focus:outline-none focus:border-[#C98A2B]/60 focus:ring-2 focus:ring-[#C98A2B]/20";
+  "w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink placeholder:text-ink/35 focus:outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/20";
 
 const TYPING_DEBOUNCE_MS = 400;
 
@@ -69,25 +69,25 @@ export default function SkillGapPage() {
   const maxDemand = report?.missing?.[0]?.jobs_requiring || 0; // the list arrives ranked
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+    <div className="mx-auto max-w-6xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>
+          <h1 className="text-2xl leading-tight text-ink font-display sm:text-[28px]">
             My Skill Gap
           </h1>
-          <p className="mt-1 text-sm text-[#1B2438]/60">Your profile skills compared with what open jobs on SRMS Connect ask for.</p>
+          <p className="mt-1 text-sm text-ink/60">Your profile skills compared with what open jobs on SRMS Connect ask for.</p>
         </div>
         <InsightTabs />
       </header>
 
       {/* which jobs to compare against */}
-      <section aria-label="Filters" className="grid gap-3 rounded-2xl border border-[#1B2438]/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end sm:p-5">
+      <section aria-label="Filters" className="grid gap-3 card p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end sm:p-5">
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-[#1B2438]/60">Role (matches job titles)</span>
+          <span className="mb-1 block text-xs font-medium text-ink/60">Role (matches job titles)</span>
           <input value={roleDraft} onChange={(e) => onRoleChange(e.target.value)} placeholder="e.g. backend, data analyst" className={inputClass} />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-[#1B2438]/60">Job type</span>
+          <span className="mb-1 block text-xs font-medium text-ink/60">Job type</span>
           <select value={filters.job_type} onChange={(e) => commit({ ...filters, role: roleDraft, job_type: e.target.value })} className={inputClass}>
             <option value="">Any type</option>
             {JOB_TYPES.map((t) => (
@@ -98,7 +98,7 @@ export default function SkillGapPage() {
         <button
           onClick={clearFilters}
           disabled={!hasGapFilters({ ...filters, role: roleDraft })}
-          className="rounded-lg border border-[#1B2438]/15 px-4 py-2 text-sm font-medium text-[#1B2438]/70 hover:bg-[#1B2438]/5 disabled:opacity-40"
+          className="rounded-lg border border-ink/15 px-4 py-2 text-sm font-medium text-ink/70 hover:bg-ink/5 disabled:opacity-40"
         >
           Clear
         </button>
@@ -118,7 +118,7 @@ export default function SkillGapPage() {
 
           {view === "no-jobs" && (
             <InsightCard title="Nothing to compare yet">
-              <p className="text-sm text-[#1B2438]/65">
+              <p className="text-sm text-ink/65">
                 {hasGapFilters(filters)
                   ? "No open jobs match these filters. Try a broader role or a different job type."
                   : "There are no open jobs on SRMS Connect right now, so there is no demand to compare your skills with."}
@@ -128,22 +128,22 @@ export default function SkillGapPage() {
 
           {view === "no-job-skills" && (
             <InsightCard title="These jobs don't list skills">
-              <p className="text-sm text-[#1B2438]/65">
+              <p className="text-sm text-ink/65">
                 {summary.jobs_considered} open {summary.jobs_considered === 1 ? "job matches" : "jobs match"}, but none of them lists required skills, so a gap can't be calculated.
               </p>
             </InsightCard>
           )}
 
           {view === "no-profile-skills" && (
-            <div className="rounded-2xl border border-[#C98A2B]/40 bg-[#C98A2B]/[0.06] px-5 py-4 text-sm text-[#1B2438]/80">
+            <div className="rounded-xl border border-accent/40 bg-accent/[0.06] px-5 py-4 text-sm text-ink/80">
               You haven't added any skills to your profile, so every demanded skill shows as missing.{" "}
-              <Link to="/profile" className="font-medium text-[#9F6C1E] underline">Add your skills</Link> to get a real comparison.
+              <Link to="/profile" className="font-medium text-accent-700 underline">Add your skills</Link> to get a real comparison.
             </div>
           )}
 
           {view === "all-matched" && (
             <InsightCard title="No gaps for these jobs">
-              <p className="text-sm text-[#1B2438]/65">
+              <p className="text-sm text-ink/65">
                 <span aria-hidden="true">{"✓ "}</span>
                 You already list every skill these jobs ask for. {coverageSentence(summary)}
               </p>
@@ -152,21 +152,21 @@ export default function SkillGapPage() {
 
           {report.missing.length > 0 && (
             <InsightCard title="Skills to learn next" basis={report.ranking_rule}>
-              <ol className="divide-y divide-[#1B2438]/8">
+              <ol className="divide-y divide-ink/8">
                 {report.missing.map((entry, index) => (
                   <li key={entry.skill_key} className="py-3 first:pt-0 last:pb-0">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                      <h3 className="text-base font-medium text-[#1B2438]">
-                        <span className="mr-2 tabular-nums text-sm text-[#1B2438]/40">{index + 1}.</span>
+                      <h3 className="text-base font-medium text-ink">
+                        <span className="mr-2 tabular-nums text-sm text-ink/40">{index + 1}.</span>
                         {entry.skill}
                       </h3>
-                      <p className="text-sm tabular-nums text-[#1B2438]/80">{demandSentence(entry, summary)}</p>
+                      <p className="text-sm tabular-nums text-ink/80">{demandSentence(entry, summary)}</p>
                     </div>
                     {/* bar = jobs asking for it, relative to the most demanded missing skill */}
                     <div className="mt-1.5 h-2.5 w-full" aria-hidden="true">
-                      <div className="h-full rounded-r bg-[#C98A2B]" style={{ width: `${barWidth(entry.jobs_requiring, maxDemand)}%` }} />
+                      <div className="h-full rounded-r bg-accent" style={{ width: `${barWidth(entry.jobs_requiring, maxDemand)}%` }} />
                     </div>
-                    <p className="mt-1.5 text-xs text-[#1B2438]/55">
+                    <p className="mt-1.5 text-xs text-ink/55">
                       {alumniSentence(entry.alumni_with_skill)}
                       {entry.example_jobs.length > 0 && (
                         <>
@@ -174,7 +174,7 @@ export default function SkillGapPage() {
                           {entry.example_jobs.map((job, i) => (
                             <span key={job.id}>
                               {i > 0 && ", "}
-                              <Link to={`/jobs/${job.id}`} className="font-medium text-[#9F6C1E] hover:underline">
+                              <Link to={`/jobs/${job.id}`} className="font-medium text-accent-700 hover:underline">
                                 {job.title}
                               </Link>
                             </span>
@@ -191,42 +191,42 @@ export default function SkillGapPage() {
           <div className="grid gap-5 lg:grid-cols-2">
             <InsightCard title="Skills you already have that jobs want" basis={coverageSentence(summary) || "Skills on your profile that these jobs ask for."}>
               {report.matched.length === 0 ? (
-                <p className="py-4 text-sm text-[#1B2438]/45">None of your profile skills are asked for by these jobs yet.</p>
+                <p className="py-4 text-sm text-ink/45">None of your profile skills are asked for by these jobs yet.</p>
               ) : (
                 <ul className="flex flex-wrap gap-2">
                   {report.matched.map((entry) => (
-                    <li key={entry.skill_key} className="rounded-full border border-[#3F6B52]/30 bg-[#3F6B52]/[0.08] px-3 py-1 text-sm text-[#2F5340]">
+                    <li key={entry.skill_key} className="rounded-full border border-success/30 bg-success/[0.08] px-3 py-1 text-sm text-success-700">
                       <span aria-hidden="true">{"✓ "}</span>
                       {entry.skill}
-                      <span className="ml-1.5 text-xs text-[#1B2438]/55">{entry.jobs_requiring} {entry.jobs_requiring === 1 ? "job" : "jobs"}</span>
+                      <span className="ml-1.5 text-xs text-ink/55">{entry.jobs_requiring} {entry.jobs_requiring === 1 ? "job" : "jobs"}</span>
                     </li>
                   ))}
                 </ul>
               )}
               {report.your_skills.length > 0 && (
-                <p className="mt-4 border-t border-[#1B2438]/8 pt-3 text-xs text-[#1B2438]/55">
+                <p className="mt-4 border-t border-ink/8 pt-3 text-xs text-ink/55">
                   On your profile: {report.your_skills.join(", ")}.{" "}
-                  <Link to="/profile" className="font-medium text-[#9F6C1E] hover:underline">Edit skills</Link>
+                  <Link to="/profile" className="font-medium text-accent-700 hover:underline">Edit skills</Link>
                 </p>
               )}
             </InsightCard>
 
             <InsightCard title="Closest job matches" basis="Share of each job's listed skills that are on your profile.">
               {report.job_matches.length === 0 ? (
-                <p className="py-4 text-sm text-[#1B2438]/45">No jobs to compare.</p>
+                <p className="py-4 text-sm text-ink/45">No jobs to compare.</p>
               ) : (
                 <ul className="space-y-3">
                   {report.job_matches.map((job) => (
                     <li key={job.id}>
                       <div className="flex items-baseline justify-between gap-3">
-                        <Link to={`/jobs/${job.id}`} className="min-w-0 truncate text-sm font-medium text-[#1B2438] hover:text-[#9F6C1E]">
-                          {job.title} <span className="font-normal text-[#1B2438]/55">· {job.company} · {jobTypeLabel(job.job_type)}</span>
+                        <Link to={`/jobs/${job.id}`} className="min-w-0 truncate text-sm font-medium text-ink hover:text-accent-700">
+                          {job.title} <span className="font-normal text-ink/55">· {job.company} · {jobTypeLabel(job.job_type)}</span>
                         </Link>
-                        <span className="shrink-0 text-sm tabular-nums text-[#1B2438]/80">
-                          {job.matched}/{job.required} <span className="text-xs text-[#1B2438]/50">({formatShare(job.match_percent)})</span>
+                        <span className="shrink-0 text-sm tabular-nums text-ink/80">
+                          {job.matched}/{job.required} <span className="text-xs text-ink/50">({formatShare(job.match_percent)})</span>
                         </span>
                       </div>
-                      {job.missing.length > 0 && <p className="mt-0.5 text-xs text-[#1B2438]/55">Missing: {job.missing.join(", ")}</p>}
+                      {job.missing.length > 0 && <p className="mt-0.5 text-xs text-ink/55">Missing: {job.missing.join(", ")}</p>}
                     </li>
                   ))}
                 </ul>

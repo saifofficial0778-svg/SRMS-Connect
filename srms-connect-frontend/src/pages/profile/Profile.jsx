@@ -15,6 +15,8 @@ import OpenToSection from "../../components/profile/OpenToSection";
 import ProjectsSection from "../../components/profile/ProjectsSection";
 import EditProfileModal from "../../components/profile/EditProfileModal";
 import ProfileSkeleton from "../../components/profile/ProfileSkeleton";
+import AnalyticsCard from "../../components/profile/AnalyticsCard";
+import PostsSection from "../../components/profile/PostsSection";
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
@@ -86,10 +88,10 @@ export default function Profile() {
   if (error) {
     return (
       <div className="max-w-md mx-auto mt-16 text-center px-4">
-        <p className="text-[#1B2438] font-medium">{error}</p>
+        <p className="text-ink font-medium">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 rounded-lg bg-[#1B2438] text-white text-sm hover:bg-[#141B2C]"
+          className="mt-4 px-4 py-2 rounded-lg bg-brand text-white text-sm font-medium shadow-sm hover:bg-brand-600"
         >
           Try again
         </button>
@@ -100,14 +102,14 @@ export default function Profile() {
   if (!profile) {
     return (
       <div className="max-w-md mx-auto mt-16 text-center px-4">
-        <p className="text-[#1B2438]/70">No profile found for this account.</p>
+        <p className="text-ink/70">No profile found for this account.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F6F8]">
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-5">
+    <div className="min-h-screen bg-canvas">
+      <div className="mx-auto max-w-5xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
         <ProfileHeader
           profile={profile}
           onEditClick={() => setEditOpen(true)}
@@ -115,6 +117,8 @@ export default function Profile() {
           onPhotoRemove={handlePhotoRemove}
           showToast={showToast}
         />
+
+        <AnalyticsCard />
 
         <div className="grid md:grid-cols-[1.1fr_1fr] gap-5 items-start">
           <div className="space-y-5">
@@ -140,6 +144,8 @@ export default function Profile() {
             <SocialLinks profile={profile} />
           </div>
         </div>
+
+        <PostsSection />
       </div>
 
       {editOpen && (

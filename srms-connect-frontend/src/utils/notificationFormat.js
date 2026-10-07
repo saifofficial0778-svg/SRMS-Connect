@@ -89,6 +89,9 @@ export function describeNotification(notification) {
       };
     }
 
+    case "PROFILE_VIEW":
+      return { actorName, message: "viewed your profile", to: "/analytics#viewers" };
+
     case "ACCOUNT_STATUS":
       return {
         actorName: SYSTEM_NAME,

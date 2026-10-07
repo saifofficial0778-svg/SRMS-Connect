@@ -20,7 +20,7 @@ import {
 } from "../../utils/careerFormat";
 
 const inputClass =
-  "w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#1B2438] placeholder:text-[#1B2438]/35 focus:outline-none focus:ring-2 focus:ring-[#C98A2B]/20";
+  "w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:outline-none focus:ring-2 focus:ring-brand/20";
 
 // /career/new                      pick a type and an alumnus
 // /career/new?type=REFERRAL&job=7  "Ask for a referral" on a job
@@ -99,24 +99,24 @@ export default function NewCareerRequestPage() {
     }
   };
 
-  const border = (field) => (errors[field] ? "border-red-300" : "border-[#1B2438]/15 focus:border-[#C98A2B]/60");
+  const border = (field) => (errors[field] ? "border-red-300" : "border-ink/15 focus:border-brand/60");
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <Link to={jobId ? `/jobs/${jobId}` : "/career"} className="text-sm font-medium text-[#C98A2B] hover:text-[#B37A22]">
+      <Link to={jobId ? `/jobs/${jobId}` : "/career"} className="text-sm font-medium text-accent-700 hover:text-accent-800">
         &larr; {jobId ? "Back to job" : "Career help"}
       </Link>
 
-      <h1 className="mt-3 text-3xl text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>
+      <h1 className="mt-3 text-3xl text-ink font-display">
         {jobId ? "Ask for a referral" : "Ask for help"}
       </h1>
-      <p className="mt-1 text-sm text-[#1B2438]/60">{meta.hint}</p>
+      <p className="mt-1 text-sm text-ink/60">{meta.hint}</p>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-6 rounded-2xl border border-[#1B2438]/10 bg-white p-5 sm:p-7">
+      <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-6 card p-5 sm:p-7">
         {/* what kind of help (fixed to "referral" when started from a job) */}
         {!jobId && (
           <fieldset>
-            <legend className="mb-2 text-sm font-medium text-[#1B2438]">What do you need?</legend>
+            <legend className="mb-2 text-sm font-medium text-ink">What do you need?</legend>
             <div className="flex flex-wrap gap-2">
               {REQUEST_TYPES.filter((t) => !t.needsJob).map((t) => (
                 <button
@@ -125,36 +125,36 @@ export default function NewCareerRequestPage() {
                   aria-pressed={type === t.value}
                   onClick={() => changeType(t.value)}
                   className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
-                    type === t.value ? "border-[#C98A2B] bg-[#C98A2B] text-white" : "border-[#1B2438]/15 text-[#1B2438]/70 hover:bg-[#1B2438]/5"
+                    type === t.value ? "border-accent bg-brand text-white" : "border-ink/15 text-ink/70 hover:bg-ink/5"
                   }`}
                 >
                   {t.label}
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-xs text-[#1B2438]/45">For a referral, open the job on the Jobs page and choose "Ask for a referral".</p>
+            <p className="mt-2 text-xs text-ink/45">For a referral, open the job on the Jobs page and choose "Ask for a referral".</p>
           </fieldset>
         )}
 
         {jobId && people.job && (
-          <div className="rounded-xl bg-[#1B2438]/[0.03] px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#1B2438]/45">Job</p>
-            <p className="mt-1 text-sm font-medium text-[#1B2438]">{jobLine(people.job)}</p>
+          <div className="rounded-lg bg-ink/[0.03] px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink/45">Job</p>
+            <p className="mt-1 text-sm font-medium text-ink">{jobLine(people.job)}</p>
           </div>
         )}
 
         {/* who to ask */}
         <fieldset>
-          <legend className="mb-2 text-sm font-medium text-[#1B2438]">Who do you want to ask?</legend>
+          <legend className="mb-2 text-sm font-medium text-ink">Who do you want to ask?</legend>
 
-          {loadingPeople && <p className="text-sm text-[#1B2438]/45" aria-busy="true">Loading...</p>}
-          {!loadingPeople && people.error && <p className="text-sm text-red-600">{people.error}</p>}
+          {loadingPeople && <p className="text-sm text-ink/45" aria-busy="true">Loading...</p>}
+          {!loadingPeople && people.error && <p className="text-sm text-danger">{people.error}</p>}
 
           {!loadingPeople && !people.error && people.alumni.length === 0 && (
-            <div className="rounded-xl border border-dashed border-[#1B2438]/15 px-4 py-6 text-center">
-              <p className="text-sm font-medium text-[#1B2438]">No connected alumni yet</p>
-              <p className="mt-1 text-sm text-[#1B2438]/55">Connect with alumni first, then you can ask them for help.</p>
-              <Link to="/alumni" className="mt-3 inline-block text-sm font-medium text-[#C98A2B] hover:text-[#B37A22]">
+            <div className="rounded-lg border border-dashed border-ink/15 px-4 py-6 text-center">
+              <p className="text-sm font-medium text-ink">No connected alumni yet</p>
+              <p className="mt-1 text-sm text-ink/55">Connect with alumni first, then you can ask them for help.</p>
+              <Link to="/alumni" className="mt-3 inline-block text-sm font-medium text-accent-700 hover:text-accent-800">
                 Browse the alumni directory
               </Link>
             </div>
@@ -169,8 +169,8 @@ export default function NewCareerRequestPage() {
                 return (
                   <li key={id}>
                     <label
-                      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition-colors ${
-                        selected ? "border-[#C98A2B] bg-[#C98A2B]/[0.06]" : "border-[#1B2438]/10 hover:bg-[#1B2438]/[0.03]"
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors ${
+                        selected ? "border-accent bg-accent/[0.06]" : "border-ink/10 hover:bg-ink/[0.03]"
                       } ${a.has_active_request ? "cursor-not-allowed opacity-60" : ""}`}
                     >
                       <input
@@ -183,19 +183,19 @@ export default function NewCareerRequestPage() {
                           setAlumniId(id);
                           setErrors((errs) => ({ ...errs, alumni_id: undefined }));
                         }}
-                        className="accent-[#C98A2B]"
+                        className="accent-brand"
                       />
                       <Avatar photoUrl={a.profile_photo} fullName={a.full_name} size={36} />
                       <span className="min-w-0 flex-1">
-                        <span className="flex flex-wrap items-center gap-2 text-sm font-medium text-[#1B2438]">
+                        <span className="flex flex-wrap items-center gap-2 text-sm font-medium text-ink">
                           {a.full_name}
                           <VerifiedBadge compact />
                         </span>
-                        <span className="block truncate text-xs text-[#1B2438]/55">{headline(a)}</span>
+                        <span className="block truncate text-xs text-ink/55">{headline(a)}</span>
                         {a.has_active_request ? (
-                          <span className="block text-xs text-[#1B2438]/55">You already have an open request with them</span>
+                          <span className="block text-xs text-ink/55">You already have an open request with them</span>
                         ) : (
-                          tags.length > 0 && <span className="block text-xs text-[#9F6C1E]">{tags.join(" · ")}</span>
+                          tags.length > 0 && <span className="block text-xs text-accent-700">{tags.join(" · ")}</span>
                         )}
                       </span>
                     </label>
@@ -204,11 +204,11 @@ export default function NewCareerRequestPage() {
               })}
             </ul>
           )}
-          {errors.alumni_id && <p role="alert" className="mt-1 text-xs text-red-600">{errors.alumni_id}</p>}
+          {errors.alumni_id && <p role="alert" className="mt-1 text-xs text-danger">{errors.alumni_id}</p>}
         </fieldset>
 
         <label className="block">
-          <span className="mb-1 block text-sm font-medium text-[#1B2438]">{meta.messageLabel}</span>
+          <span className="mb-1 block text-sm font-medium text-ink">{meta.messageLabel}</span>
           <textarea
             value={message}
             onChange={(e) => {
@@ -221,15 +221,15 @@ export default function NewCareerRequestPage() {
             className={`${inputClass} ${border("message")}`}
           />
           {errors.message ? (
-            <span role="alert" className="mt-1 block text-xs text-red-600">{errors.message}</span>
+            <span role="alert" className="mt-1 block text-xs text-danger">{errors.message}</span>
           ) : (
-            <span className="mt-1 block text-xs text-[#1B2438]/45">{message.trim().length}/{meta.limits[1]} characters (at least {meta.limits[0]})</span>
+            <span className="mt-1 block text-xs text-ink/45">{message.trim().length}/{meta.limits[1]} characters (at least {meta.limits[0]})</span>
           )}
         </label>
 
         {meta.resume !== "none" && (
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-[#1B2438]">
+            <span className="mb-1 block text-sm font-medium text-ink">
               Resume link{meta.resume === "optional" ? " (optional)" : ""}
             </span>
             <input
@@ -244,21 +244,21 @@ export default function NewCareerRequestPage() {
               className={`${inputClass} ${border("resume_url")}`}
             />
             {errors.resume_url ? (
-              <span role="alert" className="mt-1 block text-xs text-red-600">{errors.resume_url}</span>
+              <span role="alert" className="mt-1 block text-xs text-danger">{errors.resume_url}</span>
             ) : (
-              <span className="mt-1 block text-xs text-[#1B2438]/45">A shareable https link. Only you and the alumnus you ask can see it.</span>
+              <span className="mt-1 block text-xs text-ink/45">A shareable https link. Only you and the alumnus you ask can see it.</span>
             )}
           </label>
         )}
 
         <div className="flex items-center justify-end gap-3">
-          <Link to={jobId ? `/jobs/${jobId}` : "/career"} className="rounded-lg border border-[#1B2438]/15 px-4 py-2.5 text-sm font-medium text-[#1B2438]/70 hover:bg-[#1B2438]/5">
+          <Link to={jobId ? `/jobs/${jobId}` : "/career"} className="rounded-lg border border-ink/15 px-4 py-2.5 text-sm font-medium text-ink/70 hover:bg-ink/5">
             Cancel
           </Link>
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg bg-[#C98A2B] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#B37A22] disabled:opacity-60 transition-colors"
+            className="rounded-lg bg-brand px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60 transition-colors"
           >
             {submitting ? "Sending..." : "Send request"}
           </button>

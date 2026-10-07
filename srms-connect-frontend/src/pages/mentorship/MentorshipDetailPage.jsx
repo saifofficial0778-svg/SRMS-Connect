@@ -10,6 +10,7 @@ import {
   setGoalStatus,
 } from "../../services/mentorshipService";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import Timeline from "../../components/ui/Timeline";
 import useToast from "../../hooks/useToast";
 import ToastStack from "../../components/ui/Toast";
 import { timeAgo } from "../../components/feed/timeAgo";
@@ -111,7 +112,7 @@ export default function MentorshipDetailPage() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
         <EmptyCard title={loaded.error || "This mentorship isn't available."}>
-          <Link to="/mentorship/dashboard" className="font-medium text-[#C98A2B] hover:text-[#B37A22]">Back to my mentorships</Link>
+          <Link to="/mentorship/dashboard" className="font-medium text-accent-700 hover:text-accent-800">Back to my mentorships</Link>
         </EmptyCard>
       </div>
     );
@@ -123,52 +124,52 @@ export default function MentorshipDetailPage() {
   const decisionActions = ["ACCEPT", "REJECT"].filter(can);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+    <div className="mx-auto max-w-4xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
       <PageHeader title="Mentorship" />
 
-      <article className="rounded-2xl border border-[#1B2438]/10 bg-white p-6 sm:p-8">
+      <article className="card p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#1B2438]/45">{topicLabel(m.topic)}</p>
-            <h2 className="mt-1 text-2xl text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>{mentorshipTitle(m)}</h2>
-            <p className="mt-1 text-sm text-[#1B2438]/50">Requested {timeAgo(m.created_at)}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink/45">{topicLabel(m.topic)}</p>
+            <h2 className="mt-1 text-2xl text-ink font-display">{mentorshipTitle(m)}</h2>
+            <p className="mt-1 text-sm text-ink/50">Requested {timeAgo(m.created_at)}</p>
           </div>
           <Badge {...mentorshipStatus(m.status)} />
         </div>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#1B2438]/45">Mentor</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/45">Mentor</p>
             <PersonLine person={m.mentor} verified={m.mentor.is_verified_alumni} />
           </div>
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#1B2438]/45">Mentee</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/45">Mentee</p>
             <PersonLine person={m.mentee} />
           </div>
         </div>
 
         <section className="mt-6">
-          <h3 className="text-sm font-semibold text-[#1B2438]">{m.my_role === "mentee" ? "Your message" : "Their message"}</h3>
+          <h3 className="text-sm font-semibold text-ink">{m.my_role === "mentee" ? "Your message" : "Their message"}</h3>
           {/* user-written text is always rendered as text, never as HTML */}
-          <p className="mt-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-[#1B2438]/80">{m.message}</p>
+          <p className="mt-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-ink/80">{m.message}</p>
         </section>
 
         {m.response && (
-          <section className="mt-5 border-l-2 border-[#C98A2B]/50 pl-4">
-            <h3 className="text-sm font-semibold text-[#1B2438]">Reply from {m.mentor.full_name}</h3>
-            <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-[#1B2438]/80">{m.response}</p>
+          <section className="mt-5 border-l-2 border-accent/50 pl-4">
+            <h3 className="text-sm font-semibold text-ink">Reply from {m.mentor.full_name}</h3>
+            <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-ink/80">{m.response}</p>
           </section>
         )}
         {m.closing_note && (
-          <section className="mt-5 border-l-2 border-[#3F6B52]/50 pl-4">
-            <h3 className="text-sm font-semibold text-[#1B2438]">Closing note</h3>
-            <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-[#1B2438]/80">{m.closing_note}</p>
+          <section className="mt-5 border-l-2 border-success/50 pl-4">
+            <h3 className="text-sm font-semibold text-ink">Closing note</h3>
+            <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-ink/80">{m.closing_note}</p>
           </section>
         )}
 
         {/* request-stage actions (what the server says this viewer may do) */}
         {!activeAction && (decisionActions.length > 0 || can("CANCEL")) && (
-          <div className="mt-6 flex flex-wrap gap-3 border-t border-[#1B2438]/8 pt-5">
+          <div className="mt-6 flex flex-wrap gap-3 border-t border-ink/8 pt-5">
             {decisionActions.map((action) => {
               const meta = mentorshipAction(action);
               return (
@@ -189,14 +190,14 @@ export default function MentorshipDetailPage() {
 
       {/* goals: shown once there are any, editable while active */}
       {(m.goals.length > 0 || isActive) && (
-        <section className="rounded-2xl border border-[#1B2438]/10 bg-white p-5 sm:p-6">
+        <section className="card p-5 sm:p-6">
           <div className="flex items-baseline justify-between">
-            <h3 className="text-lg text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>Goals</h3>
-            <span className="text-sm tabular-nums text-[#1B2438]/55">{progress.label}</span>
+            <h3 className="text-base text-ink font-display">Goals</h3>
+            <span className="text-sm tabular-nums text-ink/55">{progress.label}</span>
           </div>
 
           {m.goals.length > 0 && (
-            <ul className="mt-3 divide-y divide-[#1B2438]/8">
+            <ul className="mt-3 divide-y divide-ink/8">
               {m.goals.map((goal) => {
                 const done = goal.status === "DONE";
                 return (
@@ -207,10 +208,10 @@ export default function MentorshipDetailPage() {
                       disabled={!can("ADD_GOAL") || busy}
                       onChange={() => run(() => setGoalStatus(m.id, goal.id, done ? "OPEN" : "DONE"), done ? "Goal reopened." : "Goal done.")}
                       aria-label={`${goal.title}: ${done ? "done" : "not done"}`}
-                      className="h-4 w-4 accent-[#3F6B52]"
+                      className="h-4 w-4 accent-success"
                     />
-                    <span className={`flex-1 text-sm ${done ? "text-[#1B2438]/50 line-through" : "text-[#1B2438]"}`}>{goal.title}</span>
-                    <span className="text-xs text-[#1B2438]/45">{done ? "Done" : "Open"} · added by {goal.added_by === m.my_role ? "you" : `the ${goal.added_by}`}</span>
+                    <span className={`flex-1 text-sm ${done ? "text-ink/50 line-through" : "text-ink"}`}>{goal.title}</span>
+                    <span className="text-xs text-ink/45">{done ? "Done" : "Open"} · added by {goal.added_by === m.my_role ? "you" : `the ${goal.added_by}`}</span>
                   </li>
                 );
               })}
@@ -231,7 +232,7 @@ export default function MentorshipDetailPage() {
                   aria-label="New goal"
                   className={inputClass}
                 />
-                {goalError && <span role="alert" className="mt-1 block text-xs text-red-600">{goalError}</span>}
+                {goalError && <span role="alert" className="mt-1 block text-xs text-danger">{goalError}</span>}
               </div>
               <button type="submit" disabled={busy} className={`rounded-lg px-4 py-2.5 text-sm font-medium disabled:opacity-50 ${BUTTON_TONES.secondary}`}>Add goal</button>
             </form>
@@ -241,16 +242,16 @@ export default function MentorshipDetailPage() {
 
       {/* sessions: a simple log of what happened - no calendar or video */}
       {(m.sessions.length > 0 || isActive) && (
-        <section className="rounded-2xl border border-[#1B2438]/10 bg-white p-5 sm:p-6">
+        <section className="card p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-lg text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>Sessions</h3>
+            <h3 className="text-base text-ink font-display">Sessions</h3>
             {can("LOG_SESSION") && !showSessionForm && (
               <button onClick={() => setShowSessionForm(true)} className={`rounded-lg px-4 py-2 text-sm font-medium ${BUTTON_TONES.secondary}`}>Log a session</button>
             )}
           </div>
 
           {showSessionForm && (
-            <form onSubmit={submitSession} noValidate className="mt-4 space-y-3 rounded-xl bg-[#1B2438]/[0.03] p-4">
+            <form onSubmit={submitSession} noValidate className="mt-4 space-y-3 rounded-lg bg-ink/[0.03] p-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Date" error={sessionErrors.session_date}>
                   <input type="date" max={localToday()} value={session.session_date} onChange={(e) => setSession((s) => ({ ...s, session_date: e.target.value }))} className={inputClass} />
@@ -270,17 +271,17 @@ export default function MentorshipDetailPage() {
           )}
 
           {m.sessions.length === 0 ? (
-            <p className="mt-3 text-sm text-[#1B2438]/50">No sessions logged yet.</p>
+            <p className="mt-3 text-sm text-ink/50">No sessions logged yet.</p>
           ) : (
-            <ol className="mt-3 divide-y divide-[#1B2438]/8">
+            <ol className="mt-3 divide-y divide-ink/8">
               {m.sessions.map((s) => (
                 <li key={s.id} className="py-3">
-                  <p className="text-sm font-medium text-[#1B2438]">
+                  <p className="text-sm font-medium text-ink">
                     {s.session_date}
-                    {s.duration_minutes && <span className="font-normal text-[#1B2438]/55"> · {durationLabel(s.duration_minutes)}</span>}
-                    <span className="font-normal text-[#1B2438]/45"> · logged by {s.logged_by === m.my_role ? "you" : `the ${s.logged_by}`}</span>
+                    {s.duration_minutes && <span className="font-normal text-ink/55"> · {durationLabel(s.duration_minutes)}</span>}
+                    <span className="font-normal text-ink/45"> · logged by {s.logged_by === m.my_role ? "you" : `the ${s.logged_by}`}</span>
                   </p>
-                  <p className="mt-1 whitespace-pre-wrap break-words text-sm text-[#1B2438]/75">{s.notes}</p>
+                  <p className="mt-1 whitespace-pre-wrap break-words text-sm text-ink/75">{s.notes}</p>
                 </li>
               ))}
             </ol>
@@ -296,18 +297,7 @@ export default function MentorshipDetailPage() {
         </div>
       )}
 
-      <section className="rounded-2xl border border-[#1B2438]/10 bg-white p-5 sm:p-6">
-        <h3 className="text-sm font-semibold text-[#1B2438]">History</h3>
-        <ol className="mt-3 space-y-3">
-          {m.history.map((entry, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm">
-              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#C98A2B]" aria-hidden="true" />
-              <span className="flex-1 text-[#1B2438]/80">{mentorshipHistoryLabel(entry, m)}</span>
-              <span className="text-xs text-[#1B2438]/45">{timeAgo(entry.at)}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
+      <Timeline items={m.history.map((entry) => ({ label: mentorshipHistoryLabel(entry, m), time: timeAgo(entry.at) }))} />
 
       <ConfirmDialog
         open={confirmCancel}

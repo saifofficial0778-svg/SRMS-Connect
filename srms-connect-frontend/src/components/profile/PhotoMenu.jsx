@@ -49,13 +49,13 @@ export default function PhotoMenu({ hasPhoto, onChangeClick, onRemoveClick, onCl
     <div
       ref={menuRef}
       role="menu"
-      className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-30 w-44 rounded-xl border border-[#1B2438]/10 bg-white shadow-xl overflow-hidden"
+      className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-30 w-44 rounded-lg border border-ink/10 bg-white shadow-overlay overflow-hidden"
     >
       <button
         type="button"
         role="menuitem"
         onClick={onChangeClick}
-        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#1B2438] hover:bg-[#1B2438]/5 text-left"
+        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink hover:bg-ink/5 text-left"
       >
         <ChangeIcon />
         Change photo
@@ -65,7 +65,7 @@ export default function PhotoMenu({ hasPhoto, onChangeClick, onRemoveClick, onCl
           type="button"
           role="menuitem"
           onClick={onRemoveClick}
-          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#B3432B] hover:bg-[#B3432B]/5 text-left border-t border-[#1B2438]/5"
+          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-danger hover:bg-danger/5 text-left border-t border-ink/5"
         >
           <TrashIcon />
           Remove photo

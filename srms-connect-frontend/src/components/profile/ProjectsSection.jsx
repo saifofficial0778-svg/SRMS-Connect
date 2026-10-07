@@ -37,24 +37,23 @@ export default function ProjectsSection({ projects, setProjects, showToast }) {
   };
 
   return (
-    <section className="rounded-2xl border border-[#1B2438]/10 bg-white p-5 sm:p-6">
+    <section className="card p-5 sm:p-6">
       <div className="flex items-center justify-between">
         <h2
-          className="text-lg text-[#1B2438] border-l-4 border-[#3F6B52] pl-3"
-          style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
+          className="text-lg text-ink border-l-4 border-success pl-3 font-display"
         >
           Projects
         </h2>
         <button
           onClick={() => setModalOpen(true)}
-          className="text-sm font-medium text-[#C98A2B] hover:text-[#B37A22]"
+          className="text-sm font-medium text-accent-700 hover:text-accent-800"
         >
           + Add project
         </button>
       </div>
 
       {projects.length === 0 ? (
-        <p className="mt-4 text-sm text-[#1B2438]/50">
+        <p className="mt-4 text-sm text-ink/50">
           No projects added yet.
         </p>
       ) : (
@@ -62,18 +61,18 @@ export default function ProjectsSection({ projects, setProjects, showToast }) {
           {projects.map((p) => (
             <div
               key={p.id}
-              className="relative rounded-xl border border-[#1B2438]/10 p-4 hover:border-[#C98A2B]/40 transition-colors"
+              className="relative rounded-lg border border-ink/10 p-4 hover:border-accent/40 transition-colors"
             >
               <button
                 onClick={() => setPendingDelete(p)}
                 aria-label={`Delete ${p.title}`}
-                className="absolute top-3 right-3 h-6 w-6 flex items-center justify-center rounded-full text-[#1B2438]/40 hover:bg-[#B3432B]/10 hover:text-[#B3432B]"
+                className="absolute top-3 right-3 h-6 w-6 flex items-center justify-center rounded-full text-ink/40 hover:bg-danger/10 hover:text-danger"
               >
                 &times;
               </button>
-              <h3 className="pr-6 font-medium text-[#1B2438]">{p.title}</h3>
+              <h3 className="pr-6 font-medium text-ink">{p.title}</h3>
               {p.description && (
-                <p className="mt-1.5 text-sm text-[#1B2438]/70 leading-relaxed">
+                <p className="mt-1.5 text-sm text-ink/70 leading-relaxed">
                   {p.description}
                 </p>
               )}
@@ -82,7 +81,7 @@ export default function ProjectsSection({ projects, setProjects, showToast }) {
                   href={p.project_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 text-sm text-[#3F6B52] hover:text-[#2D4E3B] font-medium"
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm text-success hover:text-success-700 font-medium"
                 >
                   <LinkIcon />
                   View project

@@ -1,5 +1,5 @@
 function Bar({ w = "w-full", h = "h-3" }) {
-  return <div className={`${w} ${h} rounded bg-[#1B2438]/8 animate-pulse`} />;
+  return <div className={`${w} ${h} rounded bg-ink/8 animate-pulse`} />;
 }
 
 export function ConversationListSkeleton() {
@@ -7,7 +7,7 @@ export function ConversationListSkeleton() {
     <div className="space-y-1 px-2 py-2">
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="flex items-center gap-3 px-3.5 py-3">
-          <div className="h-11 w-11 rounded-full bg-[#1B2438]/8 animate-pulse shrink-0" />
+          <div className="h-11 w-11 rounded-full bg-ink/8 animate-pulse shrink-0" />
           <div className="flex-1 space-y-2">
             <Bar w="w-24" />
             <Bar w="w-36" h="h-2.5" />

@@ -4,9 +4,9 @@ const SearchService = require("./search.service");
 const SearchController = {
 
     search: catchAsync(async (req, res) => {
-        const { userId } = req.user;
+        const { userId, role } = req.user;
 
-        const data = await SearchService.search(userId, req.validatedQuery);
+        const data = await SearchService.search(userId, req.validatedQuery, role);
 
         return res.status(200).json({
             success: true,

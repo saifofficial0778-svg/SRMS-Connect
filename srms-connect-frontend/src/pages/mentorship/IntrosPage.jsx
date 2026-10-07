@@ -13,7 +13,7 @@ const BOXES = [
 ];
 
 const tabClass = (active) =>
-  `rounded-md px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${active ? "bg-white text-[#1B2438] shadow-sm" : "text-[#1B2438]/55 hover:text-[#1B2438]"}`;
+  `rounded-md px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${active ? "bg-white text-ink shadow-sm" : "text-ink/55 hover:text-ink"}`;
 
 export default function IntrosPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,11 +50,11 @@ export default function IntrosPage() {
   const current = BOXES.find((b) => b.value === box);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+    <div className="mx-auto max-w-4xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
       <PageHeader title="Introductions" subtitle="Ask someone you both know to introduce you. Nobody is contacted unless they choose to make the introduction." />
 
       {boxes.length > 1 && (
-        <div role="tablist" aria-label="Introductions" className="inline-flex max-w-full overflow-x-auto rounded-lg bg-[#1B2438]/5 p-1">
+        <div role="tablist" aria-label="Introductions" className="inline-flex max-w-full overflow-x-auto scrollbar-none rounded-lg bg-ink/[0.06] p-1">
           {boxes.map((b) => (
             <button key={b.value} role="tab" aria-selected={box === b.value} onClick={() => go(b.value)} className={tabClass(box === b.value)}>{b.label}</button>
           ))}
@@ -64,7 +64,7 @@ export default function IntrosPage() {
       {state === "loading" && <LoadingCard />}
       {state === "error" && (
         <EmptyCard title="Couldn't load introductions.">
-          <button onClick={() => setTick((n) => n + 1)} className="mt-3 rounded-lg bg-[#1B2438] px-4 py-2 text-sm text-white hover:bg-[#141B2C]">Try again</button>
+          <button onClick={() => setTick((n) => n + 1)} className="mt-3 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-600">Try again</button>
         </EmptyCard>
       )}
       {state === "success" && result.intros.length === 0 && <EmptyCard title={current.empty}>{current.hint}</EmptyCard>}
@@ -75,16 +75,16 @@ export default function IntrosPage() {
             {result.intros.map((intro) => {
               const needsYou = intro.my_role === "introducer" && intro.status === "PENDING";
               return (
-                <li key={intro.id} className={`rounded-2xl border bg-white p-5 ${needsYou ? "border-[#C98A2B]/50" : "border-[#1B2438]/10"}`}>
+                <li key={intro.id} className={`card p-5 transition-shadow hover:shadow-raised ${needsYou ? "!border-brand/40 ring-1 ring-brand/10" : ""}`}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <h3 className="text-base font-medium text-[#1B2438]">
-                      <Link to={`/mentorship/intros/${intro.id}`} className="hover:text-[#9F6C1E] focus:outline-none focus-visible:underline">{introTitle(intro)}</Link>
+                    <h3 className="text-base font-medium text-ink">
+                      <Link to={`/mentorship/intros/${intro.id}`} className="hover:text-brand">{introTitle(intro)}</Link>
                     </h3>
                     <Badge {...introStatus(intro.status)} />
                   </div>
-                  <p className="mt-0.5 text-xs text-[#1B2438]/55">{timeAgo(intro.created_at)}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-[#1B2438]/65 line-clamp-2">{intro.message}</p>
-                  <div className="mt-4 flex justify-end border-t border-[#1B2438]/8 pt-3">
+                  <p className="mt-0.5 text-xs text-ink/55">{timeAgo(intro.created_at)}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink/65 line-clamp-2">{intro.message}</p>
+                  <div className="mt-4 flex justify-end border-t border-ink/8 pt-3">
                     <Link to={`/mentorship/intros/${intro.id}`} className={`rounded-lg px-4 py-2 text-sm font-medium ${needsYou ? BUTTON_TONES.primary : BUTTON_TONES.secondary}`}>
                       {needsYou ? "Respond" : "Open"}
                     </Link>

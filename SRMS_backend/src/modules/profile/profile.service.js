@@ -4,6 +4,7 @@ const uploadToCloudinary = require("../../utils/uploadToCloudinary");
 const deleteFromCloudinary = require("../../utils/deleteFromCloudinary");
 const { ALUMNI_ONLY_INTENTS } = require("./profile.constants");
 const SkillService = require("../skill/skill.service");
+const AnalyticsService = require("../analytics/analytics.service");
 
 const ProfileService = {
 
@@ -167,11 +168,16 @@ const ProfileService = {
         };
     },
 
-        async getPublicProfile(userId) {
+    // viewer = { userId, role } from the session; when given, the visit is counted for the owner's analytics
+    async getPublicProfile(userId, viewer) {
         const profile = await ProfileRepository.findPublicProfileById(userId);
 
         if (!profile) {
             throw new AppError("Profile not found", 404);
+        }
+
+        if (viewer) {
+            await AnalyticsService.trackProfileView(viewer, userId);
         }
 
         return profile;

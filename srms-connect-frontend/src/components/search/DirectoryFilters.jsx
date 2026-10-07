@@ -1,14 +1,12 @@
 import { ROLE_OPTIONS, activeFilterCount } from "../../utils/searchParams";
 import { SearchIcon } from "../layout/navIcons";
 import { OPEN_TO_OPTIONS } from "../../utils/jobFormat";
-
-const inputClass =
-  "w-full rounded-lg border border-[#1B2438]/15 bg-white px-3 py-2 text-sm text-[#1B2438] placeholder:text-[#1B2438]/35 focus:outline-none focus:border-[#C98A2B]/60 focus:ring-2 focus:ring-[#C98A2B]/20";
+import { inputClass } from "../ui/styles";
 
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-[#1B2438]/60">{label}</span>
+      <span className="mb-1 block text-xs font-medium text-ink/60">{label}</span>
       {children}
     </label>
   );
@@ -19,9 +17,9 @@ export default function DirectoryFilters({ draft, onChange, onClear, options }) 
   const refinements = activeFilterCount(draft);
 
   return (
-    <section aria-label="Filters" className="rounded-2xl border border-[#1B2438]/10 bg-white p-4 sm:p-5">
+    <section aria-label="Filters" className="card p-4 sm:p-5">
       {/* role tabs */}
-      <div role="tablist" aria-label="Show" className="inline-flex rounded-lg bg-[#1B2438]/5 p-1">
+      <div role="tablist" aria-label="Show" className="inline-flex rounded-lg bg-ink/[0.06] p-1">
         {ROLE_OPTIONS.map(({ value, label }) => (
           <button
             key={value}
@@ -29,7 +27,7 @@ export default function DirectoryFilters({ draft, onChange, onClear, options }) 
             aria-selected={draft.role === value}
             onClick={() => onChange({ role: value })}
             className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-              draft.role === value ? "bg-white text-[#1B2438] shadow-sm" : "text-[#1B2438]/55 hover:text-[#1B2438]"
+              draft.role === value ? "bg-white text-ink shadow-sm" : "text-ink/55 hover:text-ink"
             }`}
           >
             {label}
@@ -39,7 +37,7 @@ export default function DirectoryFilters({ draft, onChange, onClear, options }) 
 
       {/* keyword */}
       <div className="relative mt-4">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#1B2438]/35">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35">
           <SearchIcon className="w-4 h-4" />
         </span>
         <input
@@ -111,7 +109,7 @@ export default function DirectoryFilters({ draft, onChange, onClear, options }) 
           <button
             onClick={onClear}
             disabled={refinements === 0 && !draft.q}
-            className="w-full rounded-lg border border-[#1B2438]/15 px-3 py-2 text-sm font-medium text-[#1B2438]/70 hover:bg-[#1B2438]/5 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+            className="w-full rounded-lg border border-ink/15 px-3 py-2 text-sm font-medium text-ink/70 hover:bg-ink/5 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
           >
             Clear filters{refinements > 0 ? ` (${refinements})` : ""}
           </button>

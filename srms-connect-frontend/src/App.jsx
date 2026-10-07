@@ -13,6 +13,8 @@ import PublicProfile from "./pages/profile/PublicProfile";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminRoute from "./components/admin/AdminRoute";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminOverviewPage from "./pages/admin/AdminOverviewPage";
+import AdminSpotlightsPage from "./pages/admin/AdminSpotlightsPage";
 import AlumniDirectory from "./pages/alumni/AlumniDirectory";
 import JobsPage from "./pages/jobs/JobsPage";
 import JobDetailPage from "./pages/jobs/JobDetailPage";
@@ -30,6 +32,7 @@ import MentorshipDetailPage from "./pages/mentorship/MentorshipDetailPage";
 import IntrosPage from "./pages/mentorship/IntrosPage";
 import NewIntroPage from "./pages/mentorship/NewIntroPage";
 import IntroDetailPage from "./pages/mentorship/IntroDetailPage";
+import AnalyticsPage from "./pages/analytics/AnalyticsPage";
 
 function App() {
   return (
@@ -62,6 +65,7 @@ function App() {
           <Route path="/career/requests/:id" element={<CareerRequestPage />} />
           <Route path="/industry-pulse" element={<IndustryPulsePage />} />
           <Route path="/skill-gap" element={<SkillGapPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/mentorship" element={<MentorsPage />} />
           <Route path="/mentorship/mentors/:id" element={<MentorDetailPage />} />
           <Route path="/mentorship/profile" element={<MentorProfilePage />} />
@@ -80,8 +84,9 @@ function App() {
             </AdminRoute>
           }
         >
+          <Route index element={<AdminOverviewPage />} />
           <Route path="users" element={<AdminUsersPage />} />
-          {/* future: <Route path="reports" element={<AdminReportsPage />} /> */}
+          <Route path="spotlights" element={<AdminSpotlightsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

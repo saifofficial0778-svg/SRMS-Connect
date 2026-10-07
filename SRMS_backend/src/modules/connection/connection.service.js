@@ -4,6 +4,30 @@ const AppError = require("../../utils/AppError");
 const NotificationService = require("../notification/notification.service");
 
 const LIVE_STATUSES = ["PENDING", "ACCEPTED"];
+const PROFILE_CONNECTIONS_LIMIT = 12;
+const SUGGESTIONS_LIMIT = 8;
+
+// What one member may see about another in a suggestion card: the same fields a public profile
+// shows, plus how the VIEWER stands with them. Never e-mail, enrollment or anything from the account.
+function toSuggestion(row, viewerId) {
+    let relation = "none";
+    if (row.viewer_status === "ACCEPTED") relation = "connected";
+    else if (row.viewer_status === "PENDING") relation = row.viewer_sender_id === viewerId ? "sent" : "received";
+
+    return {
+        user_id: row.user_id,
+        full_name: row.full_name || "SRMS Member",
+        profile_photo: row.profile_photo,
+        role: row.role,
+        company: row.company,
+        designation: row.designation,
+        branch: row.branch,
+        batch_year: row.batch_year,
+        is_verified_alumni: row.role === "ALUMNI",
+        relation,
+        connection_id: relation === "none" ? null : row.viewer_connection_id,
+    };
+}
 
 const ConnectionService = {
 
@@ -149,6 +173,35 @@ const ConnectionService = {
         return true;
     },
 
+    // "People you may know": members the viewer is not connected with, the best-connected first.
+    async getSuggestions(viewerId) {
+        const rows = await ConnectionRepository.findSuggestions(viewerId, SUGGESTIONS_LIMIT);
+        return {
+            people: rows.map((row) => ({
+                ...toSuggestion(row, viewerId),
+                mutual_connections: Number(row.mutual_connections) || 0,
+                same_branch: Boolean(row.same_branch),
+            })),
+        };
+    },
+
+    // "People <name> knows": shown under someone's profile so the viewer can grow their own network.
+    async getProfileConnections(viewerId, rawProfileUserId) {
+        const profileUserId = Number(rawProfileUserId);
+        if (!Number.isInteger(profileUserId) || profileUserId < 1) {
+            throw new AppError("Invalid user id", 400);
+        }
+
+        // a profile that can't be opened has no suggestions either
+        const owner = await userRepository.findUserById(profileUserId);
+        if (!owner || owner.status !== "ACTIVE" || owner.role === "ADMIN") {
+            throw new AppError("User not found", 404);
+        }
+
+        const rows = await ConnectionRepository.findConnectionsOfUser(profileUserId, viewerId, PROFILE_CONNECTIONS_LIMIT);
+        return { people: rows.map((row) => toSuggestion(row, viewerId)) };
+    },
+
     async getMyConnections(userId) {
         return await ConnectionRepository.getMyConnections(userId);
     },
@@ -164,3 +217,4 @@ const ConnectionService = {
 };
 
 module.exports = ConnectionService;
+module.exports.toSuggestion = toSuggestion;

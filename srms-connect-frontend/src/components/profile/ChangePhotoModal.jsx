@@ -86,19 +86,19 @@ export default function ChangePhotoModal({ currentPhoto, fullName, onClose, onSu
           onDragLeave={() => setDragActive(false)}
           onDrop={handleDrop}
           onClick={() => inputRef.current?.click()}
-          className={`cursor-pointer rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
+          className={`cursor-pointer rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors ${
             dragActive
-              ? "border-[#C98A2B] bg-[#C98A2B]/5"
-              : "border-[#1B2438]/15 hover:border-[#1B2438]/30"
+              ? "border-accent bg-accent/5"
+              : "border-ink/15 hover:border-ink/30"
           }`}
         >
-          <div className="flex flex-col items-center gap-2 text-[#1B2438]/60">
+          <div className="flex flex-col items-center gap-2 text-ink/60">
             <UploadIcon />
             <p className="text-sm">
-              <span className="font-medium text-[#C98A2B]">Click to upload</span>{" "}
+              <span className="font-medium text-accent-700">Click to upload</span>{" "}
               or drag and drop
             </p>
-            <p className="text-xs text-[#1B2438]/40">
+            <p className="text-xs text-ink/40">
               {file ? file.name : "PNG, JPG up to 5MB"}
             </p>
           </div>
@@ -111,21 +111,21 @@ export default function ChangePhotoModal({ currentPhoto, fullName, onClose, onSu
           />
         </div>
 
-        {error && <p className="text-xs text-[#B3432B]">{error}</p>}
+        {error && <p className="text-xs text-danger">{error}</p>}
 
         <div className="flex justify-end gap-2 pt-1">
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="px-4 py-2 rounded-lg text-sm text-[#1B2438]/70 hover:bg-[#1B2438]/5"
+            className="px-4 py-2 rounded-lg text-sm text-ink/70 hover:bg-ink/5"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={submitting || !file}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#C98A2B] hover:bg-[#B37A22] disabled:opacity-60"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-brand hover:bg-brand-600 disabled:opacity-60"
           >
             {submitting ? "Uploading..." : "Upload photo"}
           </button>

@@ -190,8 +190,8 @@ export default function Register() {
 
       {step === "OTP" && (
         <form onSubmit={handleVerifyOtp} className="space-y-4" noValidate>
-          <p className="text-sm text-[#1B2438]/60 -mt-1">
-            OTP sent to <span className="font-medium text-[#1B2438]">{maskedEmail}</span>
+          <p className="text-sm text-ink/60 -mt-1">
+            OTP sent to <span className="font-medium text-ink">{maskedEmail}</span>
           </p>
 
           <AuthInput
@@ -208,7 +208,7 @@ export default function Register() {
               type="button"
               onClick={handleResend}
               disabled={resendTimer > 0 || loading}
-              className="text-[#C98A2B] hover:text-[#B37A22] font-medium disabled:text-[#1B2438]/30"
+              className="text-accent-700 hover:text-accent-800 font-medium disabled:text-ink/30"
             >
               {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
             </button>
@@ -220,9 +220,9 @@ export default function Register() {
         </form>
       )}
 
-      <p className="text-center text-sm text-[#1B2438]/60 mt-6">
+      <p className="text-center text-sm text-ink/60 mt-6">
         Already have an account?{" "}
-        <Link to="/login" className="text-[#C98A2B] hover:text-[#B37A22] font-medium">
+        <Link to="/login" className="text-accent-700 hover:text-accent-800 font-medium">
           Login
         </Link>
       </p>

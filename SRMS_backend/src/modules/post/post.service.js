@@ -4,6 +4,7 @@ const pool = require("../../config/db");
 const uploadToCloudinary = require("../../utils/uploadToCloudinary");
 const deleteFromCloudinary = require("../../utils/deleteFromCloudinary");
 const NotificationService = require("../notification/notification.service");
+const AnalyticsRepository = require("../analytics/analytics.repository");
 
 const PostService = {
 
@@ -228,6 +229,22 @@ const PostService = {
                 page,
                 limit
             }
+        };
+    },
+
+    // The signed-in member's own posts, with how many people saw each one. Whose posts these are
+    // always comes from the session: nobody can list another member's posts this way.
+    async getMyPosts(userId, page, limit) {
+        const [rows, total] = await Promise.all([
+            PostRepository.findByUser(userId, userId, limit, (page - 1) * limit),
+            PostRepository.countByUser(userId),
+        ]);
+
+        const stats = rows.length ? await AnalyticsRepository.findImpressionsForPosts(rows.map((r) => r.id)) : {};
+
+        return {
+            posts: rows.map((row) => ({ ...row, analytics: stats[row.id] || { impressions: 0, reach: 0 } })),
+            pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
         };
     }
 

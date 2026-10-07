@@ -59,3 +59,64 @@ test("a racing duplicate insert (unique index) becomes a 409, not a 500", async 
 
     await assert.rejects(ConnectionService.sendRequest(4, 9), { statusCode: 409 });
 });
+
+// ---------- the people a member is connected with (suggestions under their profile) ----------
+
+const pool = require("../src/config/db");
+const { toSuggestion } = ConnectionService;
+
+const suggestionRow = (over = {}) => ({
+    user_id: 9, role: "ALUMNI", full_name: "Arjun Verma", profile_photo: null, company: "Acme", designation: "Engineer",
+    branch: "CA", batch_year: 2024, viewer_connection_id: null, viewer_status: null, viewer_sender_id: null,
+    email: "arjun@x.com", enrollment: "2024107401", password_hash: "x", ...over,
+});
+
+test("a suggestion carries public fields and the viewer's own relation, nothing private", () => {
+    assert.deepEqual(toSuggestion(suggestionRow(), 5), {
+        user_id: 9, full_name: "Arjun Verma", profile_photo: null, role: "ALUMNI", company: "Acme", designation: "Engineer",
+        branch: "CA", batch_year: 2024, is_verified_alumni: true, relation: "none", connection_id: null,
+    });
+    assert.equal(toSuggestion(suggestionRow({ viewer_connection_id: 7, viewer_status: "ACCEPTED", viewer_sender_id: 9 }), 5).relation, "connected");
+    assert.deepEqual(
+        [toSuggestion(suggestionRow({ viewer_connection_id: 7, viewer_status: "PENDING", viewer_sender_id: 5 }), 5).relation,
+         toSuggestion(suggestionRow({ viewer_connection_id: 7, viewer_status: "PENDING", viewer_sender_id: 9 }), 5).relation],
+        ["sent", "received"]
+    );
+    assert.equal(toSuggestion(suggestionRow({ viewer_connection_id: 7, viewer_status: "PENDING", viewer_sender_id: 5 }), 5).connection_id, 7);
+    assert.equal(toSuggestion(suggestionRow({ role: "STUDENT", full_name: null }), 5).full_name, "SRMS Member");
+});
+
+test("profile connections: only for an ACTIVE member, and always from the viewer's point of view", async () => {
+    const find = mock.method(ConnectionRepository, "findConnectionsOfUser", async () => [suggestionRow()]);
+
+    mock.method(userRepository, "findUserById", async () => ({ id: 9, role: "ALUMNI", status: "ACTIVE" }));
+    const result = await ConnectionService.getProfileConnections(5, "9");
+    assert.equal(result.people.length, 1);
+    assert.doesNotMatch(JSON.stringify(result), /email|enrollment|password/);
+    assert.deepEqual(find.mock.calls[0].arguments, [9, 5, 12]);
+
+    mock.method(userRepository, "findUserById", async () => ({ id: 9, role: "ALUMNI", status: "BLOCKED" }));
+    await assert.rejects(ConnectionService.getProfileConnections(5, 9), { statusCode: 404 });
+    mock.method(userRepository, "findUserById", async () => undefined);
+    await assert.rejects(ConnectionService.getProfileConnections(5, 9), { statusCode: 404 });
+    await assert.rejects(ConnectionService.getProfileConnections(5, "abc"), { statusCode: 400 });
+    assert.equal(find.mock.callCount(), 1);
+});
+
+test("SQL: profile connections are ACCEPTED links to ACTIVE non-admin members, without the viewer", async () => {
+    const calls = [];
+    mock.method(pool, "execute", async (sql, params) => {
+        calls.push({ sql: String(sql).replace(/\s+/g, " "), params });
+        return [[]];
+    });
+    await ConnectionRepository.findConnectionsOfUser(9, 5, 12);
+
+    const { sql, params } = calls[0];
+    assert.match(sql, /c\.status = 'ACCEPTED'/); // pending or rejected requests are nobody's business
+    assert.match(sql, /u\.status = 'ACTIVE'/);
+    assert.match(sql, /u\.role <> 'ADMIN'/);
+    assert.match(sql, /u\.id <> \?/);
+    assert.match(sql, /LIMIT 12/);
+    assert.doesNotMatch(sql, /email|enrollment|password/);
+    assert.deepEqual(params, [9, 5, 5, 9, 9, 5]);
+});

@@ -33,7 +33,7 @@ export default function ChatWindow({
       />
 
       {sendError && (
-        <p className="px-4 pb-1 text-xs text-[#B3432B]">{sendError}</p>
+        <p className="px-4 pb-1 text-xs text-danger">{sendError}</p>
       )}
 
       <MessageComposer onSend={onSend} onTypingStart={onTypingStart} onTypingStop={onTypingStop} />

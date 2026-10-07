@@ -118,7 +118,7 @@ export default function MediaGrid({ media }) {
         key={item.id || item.url}
         type="button"
         onClick={() => openAt(index)}
-        className={`relative overflow-hidden bg-[#1B2438]/5 text-left ${extraClass}`}
+        className={`relative overflow-hidden bg-ink/5 text-left ${extraClass}`}
       >
         {isVideo ? (
           <video src={item.url} className="w-full h-full object-cover pointer-events-none" />
@@ -139,7 +139,7 @@ export default function MediaGrid({ media }) {
         <button
           type="button"
           onClick={() => openAt(0)}
-          className="block w-full rounded-xl overflow-hidden mt-3 bg-[#1B2438]/5 max-h-[600px]"
+          className="block w-full rounded-lg overflow-hidden mt-3 bg-ink/5 max-h-[600px]"
         >
           {(media[0].type === "VIDEO" || media[0].type === "video") ? (
             <video
@@ -159,13 +159,13 @@ export default function MediaGrid({ media }) {
       )}
 
       {count === 2 && (
-        <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden mt-3">
+        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden mt-3">
           {media.map((item, i) => renderCroppedItem(item, i, "aspect-square"))}
         </div>
       )}
 
       {count === 3 && (
-        <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden mt-3 h-80">
+        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden mt-3 h-80">
           {renderCroppedItem(media[0], 0, "row-span-2")}
           {renderCroppedItem(media[1], 1)}
           {renderCroppedItem(media[2], 2)}
@@ -173,7 +173,7 @@ export default function MediaGrid({ media }) {
       )}
 
       {count >= 4 && (
-        <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden mt-3 h-80">
+        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden mt-3 h-80">
           {media.slice(0, 4).map((item, i) => {
             const isLastVisible = i === 3 && count > 4;
             const isVideo = item.type === "VIDEO" || item.type === "video";
@@ -190,7 +190,7 @@ export default function MediaGrid({ media }) {
                   <img src={item.url} alt="" className="w-full h-full object-cover" />
                 )}
                 {isLastVisible && (
-                  <div className="absolute inset-0 bg-[#1B2438]/60 flex items-center justify-center text-white text-lg font-medium">
+                  <div className="absolute inset-0 bg-ink/60 flex items-center justify-center text-white text-lg font-medium">
                     +{count - 4}
                   </div>
                 )}

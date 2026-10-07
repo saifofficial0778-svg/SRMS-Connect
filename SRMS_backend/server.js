@@ -48,6 +48,8 @@ const careerRoutes = require("./src/modules/career/career.route");
 const insightRoutes = require("./src/modules/insight/insight.route");
 const mentorshipRoutes = require("./src/modules/mentorship/mentorship.route");
 const introRoutes = require("./src/modules/intro/intro.route");
+const analyticsRoutes = require("./src/modules/analytics/analytics.route");
+const spotlightRoutes = require("./src/modules/spotlight/spotlight.route");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -62,6 +64,8 @@ app.use("/api/career", careerRoutes);
 app.use("/api/insights", insightRoutes);
 app.use("/api/mentorship", mentorshipRoutes);
 app.use("/api/intros", introRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/spotlights", spotlightRoutes);
 
 
 

@@ -100,6 +100,24 @@ const ConnectionController = {
             success: true,
             data: requests
         });
+    }),
+
+    getSuggestions: catchAsync(async (req, res) => {
+        const data = await ConnectionService.getSuggestions(req.user.userId);
+
+        res.status(200).json({
+            success: true,
+            data
+        });
+    }),
+
+    getProfileConnections: catchAsync(async (req, res) => {
+        const data = await ConnectionService.getProfileConnections(req.user.userId, req.params.userId);
+
+        res.status(200).json({
+            success: true,
+            data
+        });
     })
 };
 

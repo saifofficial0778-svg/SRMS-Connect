@@ -73,7 +73,7 @@ export default function EditProfileModal({ profile, onClose, onSubmit }) {
         <div className="grid sm:grid-cols-2 gap-4">
           {FIELDS.filter((f) => f.type !== "textarea").map((f) => (
             <div key={f.key}>
-              <label className="block text-xs text-[#1B2438]/60 mb-1.5">
+              <label className="block text-xs text-ink/60 mb-1.5">
                 {f.label}
               </label>
               <input
@@ -84,7 +84,7 @@ export default function EditProfileModal({ profile, onClose, onSubmit }) {
                 min={f.min}
                 max={f.max}
                 placeholder={f.type === "url" ? "https://..." : ""}
-                className="w-full rounded-lg border border-[#1B2438]/15 px-3.5 py-2.5 text-sm text-[#1B2438] outline-none focus:border-[#C98A2B] focus:ring-1 focus:ring-[#C98A2B]"
+                className="w-full rounded-lg border border-ink/15 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-accent focus:ring-1 focus:ring-brand"
               />
             </div>
           ))}
@@ -92,7 +92,7 @@ export default function EditProfileModal({ profile, onClose, onSubmit }) {
 
         {FIELDS.filter((f) => f.type === "textarea").map((f) => (
           <div key={f.key}>
-            <label className="block text-xs text-[#1B2438]/60 mb-1.5">
+            <label className="block text-xs text-ink/60 mb-1.5">
               {f.label}
             </label>
             <textarea
@@ -100,26 +100,26 @@ export default function EditProfileModal({ profile, onClose, onSubmit }) {
               value={form[f.key]}
               onChange={update(f.key)}
               maxLength={f.maxLength}
-              className="w-full rounded-lg border border-[#1B2438]/15 px-3.5 py-2.5 text-sm text-[#1B2438] outline-none focus:border-[#C98A2B] focus:ring-1 focus:ring-[#C98A2B] resize-none"
+              className="w-full rounded-lg border border-ink/15 px-3.5 py-2.5 text-sm text-ink outline-none focus:border-accent focus:ring-1 focus:ring-brand resize-none"
             />
           </div>
         ))}
 
-        {error && <p className="text-xs text-[#B3432B]">{error}</p>}
+        {error && <p className="text-xs text-danger">{error}</p>}
 
         <div className="flex justify-end gap-2 pt-1">
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="px-4 py-2 rounded-lg text-sm text-[#1B2438]/70 hover:bg-[#1B2438]/5"
+            className="px-4 py-2 rounded-lg text-sm text-ink/70 hover:bg-ink/5"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={submitting}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#C98A2B] hover:bg-[#B37A22] disabled:opacity-60"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-brand hover:bg-brand-600 disabled:opacity-60"
           >
             {submitting ? "Saving..." : "Save changes"}
           </button>

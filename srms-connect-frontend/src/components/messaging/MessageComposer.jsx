@@ -64,22 +64,23 @@ export default function MessageComposer({ onSend, onTypingStart, onTypingStop, d
   };
 
   return (
-    <div className="flex items-end gap-2.5 px-4 py-3 border-t border-[#1B2438]/10">
+    <div className="flex items-end gap-2.5 px-4 py-3 border-t border-ink/10">
       <textarea
         ref={textareaRef}
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onBlur={stopTypingNow}
-        placeholder="Write a message..."
+        placeholder="Write a message"
+        aria-label="Message"
         rows={1}
         maxLength={2000}
-        className="flex-1 resize-none rounded-2xl border border-[#1B2438]/15 px-4 py-2.5 text-sm text-[#1B2438] outline-none focus:border-[#C98A2B] max-h-[120px]"
+        className="max-h-[120px] flex-1 resize-none rounded-lg border border-ink/15 bg-canvas/60 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/45 transition-colors focus:border-brand/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand/10"
       />
       <button
         onClick={handleSend}
         disabled={!value.trim() || disabled}
-        className="h-10 w-10 shrink-0 rounded-full bg-[#C98A2B] text-white flex items-center justify-center hover:bg-[#B37A22] disabled:opacity-40 disabled:hover:bg-[#C98A2B] transition-colors"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand text-white shadow-sm transition-colors hover:bg-brand-600 disabled:opacity-40 disabled:hover:bg-brand"
         aria-label="Send message"
       >
         <SendIcon />

@@ -1,19 +1,14 @@
+import { MessagesSquare } from "lucide-react";
+
 export default function EmptyChat() {
   return (
-    <div className="hidden md:flex flex-1 items-center justify-center bg-[#F5F6F8]">
-      <div className="text-center max-w-xs">
-        <div
-          className="mx-auto h-14 w-14 rounded-full bg-[#1B2438]/8 flex items-center justify-center text-[#1B2438]/40 text-2xl"
-          style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-        >
-          S
-        </div>
-        <p className="mt-4 text-sm font-medium text-[#1B2438]">
-          Select a conversation
-        </p>
-        <p className="mt-1 text-xs text-[#1B2438]/50">
-          Choose someone from your connections to start chatting.
-        </p>
+    <div className="hidden flex-1 items-center justify-center bg-canvas/60 md:flex">
+      <div className="max-w-xs text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand">
+          <MessagesSquare className="h-6 w-6" strokeWidth={1.7} aria-hidden="true" />
+        </span>
+        <p className="mt-4 text-[15px] font-semibold text-ink">Your messages</p>
+        <p className="mt-1 text-sm leading-relaxed text-ink/55">Choose a conversation, or message one of your connections from their profile.</p>
       </div>
     </div>
   );

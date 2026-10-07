@@ -60,32 +60,32 @@ export default function MentorProfilePage() {
   const { mentor } = state;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+    <div className="mx-auto max-w-3xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
       <PageHeader title="Mentor profile" subtitle="Tell students what you can help with and how much time you have." />
 
       {state.status === "loading" && <LoadingCard />}
       {state.status === "error" && <EmptyCard title="Couldn't load your mentor profile.">Please refresh the page.</EmptyCard>}
       {state.status === "success" && !state.canBeMentor && (
         <EmptyCard title="Mentor profiles are for alumni">
-          <Link to="/mentorship" className="font-medium text-[#C98A2B] hover:text-[#B37A22]">Find a mentor instead</Link>
+          <Link to="/mentorship" className="font-medium text-accent-700 hover:text-accent-800">Find a mentor instead</Link>
         </EmptyCard>
       )}
 
       {state.status === "success" && state.canBeMentor && (
-        <form onSubmit={handleSubmit} noValidate className="space-y-5 rounded-2xl border border-[#1B2438]/10 bg-white p-6 sm:p-8">
+        <form onSubmit={handleSubmit} noValidate className="space-y-5 card p-6 sm:p-8">
           {mentor ? (
-            <p className="rounded-xl bg-[#1B2438]/[0.03] px-4 py-3 text-sm text-[#1B2438]/70">
+            <p className="rounded-lg bg-ink/[0.03] px-4 py-3 text-sm text-ink/70">
               You are listed as a mentor with {mentor.active_mentees} active {mentor.active_mentees === 1 ? "mentee" : "mentees"}.{" "}
-              <Link to={`/mentorship/mentors/${mentor.user_id}`} className="font-medium text-[#C98A2B] hover:text-[#B37A22]">See how students see you</Link>
+              <Link to={`/mentorship/mentors/${mentor.user_id}`} className="font-medium text-accent-700 hover:text-accent-800">See how students see you</Link>
             </p>
           ) : (
-            <p className="rounded-xl bg-[#C98A2B]/[0.08] px-4 py-3 text-sm text-[#1B2438]/75">
+            <p className="rounded-lg bg-accent/[0.08] px-4 py-3 text-sm text-ink/75">
               Saving this makes you a mentor and adds "Open to: Mentorship" to your profile. Your expertise is taken from the skills already on your profile.
             </p>
           )}
 
           <fieldset>
-            <legend className="mb-2 text-sm font-medium text-[#1B2438]">What can you mentor on?</legend>
+            <legend className="mb-2 text-sm font-medium text-ink">What can you mentor on?</legend>
             <div className="flex flex-wrap gap-2">
               {TOPICS.map((t) => {
                 const on = form.topics.includes(t.value);
@@ -99,7 +99,7 @@ export default function MentorProfilePage() {
                       setErrors((errs) => ({ ...errs, topics: undefined }));
                     }}
                     className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
-                      on ? "border-[#C98A2B] bg-[#C98A2B] text-white" : "border-[#1B2438]/15 text-[#1B2438]/70 hover:bg-[#1B2438]/5"
+                      on ? "border-accent bg-brand text-white" : "border-ink/15 text-ink/70 hover:bg-ink/5"
                     }`}
                   >
                     {on && <span aria-hidden="true">{"✓ "}</span>}
@@ -108,7 +108,7 @@ export default function MentorProfilePage() {
                 );
               })}
             </div>
-            {errors.topics && <p role="alert" className="mt-1 text-xs text-red-600">{errors.topics}</p>}
+            {errors.topics && <p role="alert" className="mt-1 text-xs text-danger">{errors.topics}</p>}
           </fieldset>
 
           <Field label="Short bio for students" error={errors.bio} hint={`${form.bio.trim().length}/600 characters (at least 20)`}>
@@ -128,12 +128,12 @@ export default function MentorProfilePage() {
             <input value={form.areas} onChange={set("areas")} className={inputClass} />
           </Field>
 
-          <label className="flex items-center gap-3 text-sm text-[#1B2438]">
+          <label className="flex items-center gap-3 text-sm text-ink">
             <input
               type="checkbox"
               checked={form.is_accepting}
               onChange={(e) => setForm((f) => ({ ...f, is_accepting: e.target.checked }))}
-              className="h-4 w-4 accent-[#C98A2B]"
+              className="h-4 w-4 accent-brand"
             />
             Accepting new mentorship requests
           </label>

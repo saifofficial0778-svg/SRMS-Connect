@@ -63,7 +63,7 @@ export default function MentorDetailPage() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
         <EmptyCard title={loaded.error || "This mentor isn't available."}>
-          <Link to="/mentorship" className="font-medium text-[#C98A2B] hover:text-[#B37A22]">Back to mentors</Link>
+          <Link to="/mentorship" className="font-medium text-accent-700 hover:text-accent-800">Back to mentors</Link>
         </EmptyCard>
       </div>
     );
@@ -74,46 +74,46 @@ export default function MentorDetailPage() {
   const showForm = viewer.can_request && !open && canRequestMentor(mentor);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+    <div className="mx-auto max-w-4xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
       <PageHeader title="Mentor" />
 
-      <article className="rounded-2xl border border-[#1B2438]/10 bg-white p-6 sm:p-8">
+      <article className="card p-6 sm:p-8">
         <div className="flex flex-wrap items-start gap-4">
           <Avatar photoUrl={mentor.profile_photo} fullName={mentor.full_name} size={72} />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-2xl text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>{mentor.full_name}</h2>
+              <h2 className="text-2xl text-ink font-display">{mentor.full_name}</h2>
               {mentor.is_verified_alumni && <VerifiedBadge />}
             </div>
-            {headline(mentor) && <p className="text-[#1B2438]/75">{headline(mentor)}</p>}
-            <p className="mt-1 text-sm text-[#1B2438]/55">{spotsLabel(mentor)}</p>
-            <Link to={`/profile/${mentor.user_id}`} className="mt-1 inline-block text-sm font-medium text-[#C98A2B] hover:text-[#B37A22]">
+            {headline(mentor) && <p className="text-ink/75">{headline(mentor)}</p>}
+            <p className="mt-1 text-sm text-ink/55">{spotsLabel(mentor)}</p>
+            <Link to={`/profile/${mentor.user_id}`} className="mt-1 inline-block text-sm font-medium text-accent-700 hover:text-accent-800">
               View full profile
             </Link>
           </div>
         </div>
 
         <section className="mt-6">
-          <h3 className="text-sm font-semibold text-[#1B2438]">About</h3>
-          <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-[#1B2438]/80">{mentor.bio}</p>
+          <h3 className="text-sm font-semibold text-ink">About</h3>
+          <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-ink/80">{mentor.bio}</p>
         </section>
 
         <dl className="mt-6 grid gap-5 sm:grid-cols-2">
           <div>
-            <dt className="text-sm font-semibold text-[#1B2438]">Mentors on</dt>
+            <dt className="text-sm font-semibold text-ink">Mentors on</dt>
             <dd className="mt-2"><TopicChips topics={mentor.topics} /></dd>
           </div>
           <div>
-            <dt className="text-sm font-semibold text-[#1B2438]">Availability</dt>
-            <dd className="mt-1 text-sm text-[#1B2438]/75">{mentor.availability}</dd>
+            <dt className="text-sm font-semibold text-ink">Availability</dt>
+            <dd className="mt-1 text-sm text-ink/75">{mentor.availability}</dd>
           </div>
           <div>
-            <dt className="text-sm font-semibold text-[#1B2438]">Skills</dt>
-            <dd className="mt-1 text-sm text-[#1B2438]/75">{mentor.skills.length ? mentor.skills.join(", ") : "No skills listed on their profile."}</dd>
+            <dt className="text-sm font-semibold text-ink">Skills</dt>
+            <dd className="mt-1 text-sm text-ink/75">{mentor.skills.length ? mentor.skills.join(", ") : "No skills listed on their profile."}</dd>
           </div>
           <div>
-            <dt className="text-sm font-semibold text-[#1B2438]">Prefers mentoring</dt>
-            <dd className="mt-1 text-sm text-[#1B2438]/75">{mentor.areas.length ? mentor.areas.join(", ") : "Students from any area"}</dd>
+            <dt className="text-sm font-semibold text-ink">Prefers mentoring</dt>
+            <dd className="mt-1 text-sm text-ink/75">{mentor.areas.length ? mentor.areas.join(", ") : "Students from any area"}</dd>
           </div>
         </dl>
 
@@ -123,21 +123,21 @@ export default function MentorDetailPage() {
       {/* where you stand with this mentor */}
       {viewer.is_self && (
         <EmptyCard title="This is your mentor profile">
-          <Link to="/mentorship/profile" className="font-medium text-[#C98A2B] hover:text-[#B37A22]">Edit it</Link>
+          <Link to="/mentorship/profile" className="font-medium text-accent-700 hover:text-accent-800">Edit it</Link>
         </EmptyCard>
       )}
 
       {open && (
         <EmptyCard title={open.status === "ACTIVE" ? "You have an active mentorship with this mentor" : "Your request is waiting for a reply"}>
-          <Link to={`/mentorship/requests/${open.id}`} className="font-medium text-[#C98A2B] hover:text-[#B37A22]">Open it</Link>
+          <Link to={`/mentorship/requests/${open.id}`} className="font-medium text-accent-700 hover:text-accent-800">Open it</Link>
         </EmptyCard>
       )}
 
       {!viewer.is_self && !open && viewer.can_request && !canRequestMentor(mentor) && <EmptyCard title={spotsLabel(mentor)}>Check back later.</EmptyCard>}
 
       {showForm && (
-        <form onSubmit={handleSubmit} noValidate className="space-y-4 rounded-2xl border border-[#1B2438]/10 bg-white p-6 sm:p-8">
-          <h3 className="text-lg text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>Request mentorship</h3>
+        <form onSubmit={handleSubmit} noValidate className="space-y-4 card p-6 sm:p-8">
+          <h3 className="text-base text-ink font-display">Request mentorship</h3>
 
           <Field label="What do you want help with?" error={errors.topic}>
             <select value={form.topic} onChange={set("topic")} className={inputClass}>
@@ -164,9 +164,9 @@ export default function MentorDetailPage() {
 
       {/* not connected yet: a mutual alumnus may be able to introduce you */}
       {!viewer.is_self && !viewer.is_connected && viewer.can_request && (
-        <p className="text-center text-sm text-[#1B2438]/60">
+        <p className="text-center text-sm text-ink/60">
           Don't know them yet?{" "}
-          <Link to={`/mentorship/intros/new?target=${mentor.user_id}`} className="font-medium text-[#C98A2B] hover:text-[#B37A22]">
+          <Link to={`/mentorship/intros/new?target=${mentor.user_id}`} className="font-medium text-accent-700 hover:text-accent-800">
             Ask a mutual connection for an introduction
           </Link>
         </p>

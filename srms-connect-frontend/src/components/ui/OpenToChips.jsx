@@ -6,11 +6,11 @@ export default function OpenToChips({ intents = [], className = "" }) {
 
   return (
     <ul className={`flex flex-wrap items-center gap-1.5 ${className}`} aria-label="Open to">
-      <li className="text-xs font-medium text-[#1B2438]/50">Open to</li>
+      <li className="text-xs font-medium text-ink/50">Open to</li>
       {intents.map((intent) => (
         <li
           key={intent}
-          className="rounded-full border border-[#C98A2B]/40 bg-[#C98A2B]/[0.08] px-2.5 py-0.5 text-xs font-medium text-[#9F6C1E]"
+          className="rounded-full border border-accent/40 bg-accent/[0.08] px-2.5 py-0.5 text-xs font-medium text-accent-700"
         >
           {openToLabel(intent)}
         </li>

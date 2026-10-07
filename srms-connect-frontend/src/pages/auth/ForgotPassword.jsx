@@ -147,7 +147,7 @@ export default function ForgotPassword() {
                 setOtp("");
                 setFieldError("");
               }}
-              className="text-[#1B2438]/60 hover:text-[#1B2438] font-medium"
+              className="text-ink/60 hover:text-ink font-medium"
             >
               Change enrollment
             </button>
@@ -155,7 +155,7 @@ export default function ForgotPassword() {
               type="button"
               onClick={handleResend}
               disabled={resendTimer > 0 || loading}
-              className="text-[#C98A2B] hover:text-[#B37A22] font-medium disabled:text-[#1B2438]/30"
+              className="text-accent-700 hover:text-accent-800 font-medium disabled:text-ink/30"
             >
               {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
             </button>
@@ -167,9 +167,9 @@ export default function ForgotPassword() {
         </form>
       )}
 
-      <p className="text-center text-sm text-[#1B2438]/60 mt-6">
+      <p className="text-center text-sm text-ink/60 mt-6">
         Remember your password?{" "}
-        <Link to="/login" className="text-[#C98A2B] hover:text-[#B37A22] font-medium">
+        <Link to="/login" className="text-accent-700 hover:text-accent-800 font-medium">
           Back to Login
         </Link>
       </p>

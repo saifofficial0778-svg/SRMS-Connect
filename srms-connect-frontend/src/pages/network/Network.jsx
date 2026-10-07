@@ -11,6 +11,9 @@ import {
   cancelConnectionRequest,
   removeConnection,
 } from "../../services/connectionService";
+import { PageHeader, Tabs } from "../../components/ui/Primitives";
+import ToastStack from "../../components/ui/Toast";
+import { NETWORK_TABS } from "../../utils/navigation";
 import NetworkTabs from "../../components/network/NetworkTabs";
 import NetworkStats from "../../components/network/NetworkStats";
 import ConnectionCard from "../../components/network/ConnectionCard";
@@ -157,20 +160,12 @@ export default function Network() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1
-          className="text-2xl text-[#1B2438] mb-3"
-          style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-        >
-          My Network
-        </h1>
-        <NetworkStats
-          connections={connections.length}
-          received={received.length}
-          sent={sent.length}
-        />
-      </div>
+    <div className="mx-auto max-w-4xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
+      <PageHeader eyebrow="Network" title="My network" subtitle="The people you are connected with, and requests waiting for an answer.">
+        <Tabs tabs={NETWORK_TABS} label="Network" />
+      </PageHeader>
+
+      <NetworkStats connections={connections.length} received={received.length} sent={sent.length} />
 
       <NetworkTabs
         active={activeTab}
@@ -178,7 +173,7 @@ export default function Network() {
         counts={{ connections: connections.length, received: received.length, sent: sent.length }}
       />
 
-      <div className="mt-5 space-y-3">
+      <div className="space-y-3">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => <NetworkCardSkeleton key={i} />)
         ) : activeTab === "connections" ? (
@@ -228,15 +223,7 @@ export default function Network() {
         )}
       </div>
 
-      {toast && (
-        <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg text-sm font-medium shadow-lg text-white ${
-            toast.type === "error" ? "bg-red-600" : "bg-[#1B2438]"
-          }`}
-        >
-          {toast.message}
-        </div>
-      )}
+      <ToastStack toasts={toast ? [{ id: 1, ...toast }] : []} onDismiss={() => setToast(null)} />
     </div>
   );
 }

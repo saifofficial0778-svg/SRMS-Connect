@@ -149,6 +149,17 @@ const PostController = {
             data: result
         });
     }),
+
+    getMyPosts: catchAsync(async (req, res) => {
+        const { page, limit } = req.validatedQuery;
+
+        const result = await PostService.getMyPosts(req.user.userId, page, limit);
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    }),
 };
 
 module.exports = PostController;

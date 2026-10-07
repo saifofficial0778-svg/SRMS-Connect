@@ -335,6 +335,54 @@ const PostRepository = {
             media: mediaByPost[row.id] || [],
         }));
     },
+
+    // One member's own posts, newest first, in the same shape as a feed row (so the same card
+    // renders them). Only posts of an ACTIVE account are returned.
+    // limit/offset are validated integers (execute() can't bind LIMIT placeholders)
+    async findByUser(viewerId, authorId, limit, offset) {
+        const [rows] = await pool.execute(
+            `
+            SELECT
+                p.id,
+                p.user_id,
+                p.content,
+                p.created_at,
+                pr.full_name,
+                pr.profile_photo,
+                pr.bio,
+                (SELECT COUNT(*) FROM post_likes pl WHERE pl.post_id = p.id) AS likes_count,
+                (SELECT COUNT(*) FROM post_comments pc WHERE pc.post_id = p.id) AS comments_count,
+                EXISTS (
+                    SELECT 1 FROM post_likes my_like WHERE my_like.post_id = p.id AND my_like.user_id = ?
+                ) AS is_liked
+            FROM posts p
+            JOIN users u ON u.id = p.user_id AND u.status = 'ACTIVE'
+            JOIN profiles pr ON pr.user_id = p.user_id
+            WHERE p.user_id = ?
+              AND p.status = 'ACTIVE'
+              AND p.deleted_at IS NULL
+            ORDER BY p.created_at DESC, p.id DESC
+            LIMIT ${limit} OFFSET ${offset}
+            `,
+            [viewerId, authorId]
+        );
+
+        const mediaByPost = await PostRepository.findMediaForPosts(rows.map((r) => r.id));
+        return rows.map((row) => ({ ...row, media: mediaByPost[row.id] || [] }));
+    },
+
+    async countByUser(authorId) {
+        const [[row]] = await pool.execute(
+            `
+            SELECT COUNT(*) AS c
+            FROM posts p
+            JOIN users u ON u.id = p.user_id AND u.status = 'ACTIVE'
+            WHERE p.user_id = ? AND p.status = 'ACTIVE' AND p.deleted_at IS NULL
+            `,
+            [authorId]
+        );
+        return Number(row.c);
+    },
 };
 
 module.exports = PostRepository;

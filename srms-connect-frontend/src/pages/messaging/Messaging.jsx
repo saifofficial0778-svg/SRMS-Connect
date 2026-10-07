@@ -376,9 +376,9 @@ export default function Messaging() {
   };
 
   return (
-    <div className="h-[calc(100vh-64px)] max-w-6xl mx-auto flex border-x border-[#1B2438]/10 bg-white overflow-hidden">
+    <div className="mx-auto flex h-[calc(100dvh-8rem)] max-w-6xl overflow-hidden bg-white md:my-5 md:h-[calc(100dvh-6.5rem)] md:rounded-xl md:border md:border-ink/10 md:shadow-card">
       <div
-        className={`w-full md:w-[340px] shrink-0 border-r border-[#1B2438]/10 ${
+        className={`w-full md:w-[340px] shrink-0 border-r border-ink/10 ${
           activeConversationId ? "hidden md:block" : "block"
         }`}
       >

@@ -5,7 +5,7 @@ import BarList from "../../components/insights/BarList";
 import { DataSourceNote, InsightCard, InsightError, InsightSkeleton, InsightTabs, StatTile } from "../../components/insights/InsightParts";
 import { formatShare, jobTypeName, pluralize, toBarRows, trendLabel } from "../../utils/insightFormat";
 
-const TREND_TONES = { up: "text-[#2F5340]", down: "text-[#8A3521]", flat: "text-[#1B2438]/50" };
+const TREND_TONES = { up: "text-success-700", down: "text-danger-700", flat: "text-ink/50" };
 
 export default function IndustryPulsePage() {
   const [state, setState] = useState({ tick: -1, status: "loading", pulse: null });
@@ -25,13 +25,13 @@ export default function IndustryPulsePage() {
   const pulse = state.pulse;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+    <div className="mx-auto max-w-6xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>
+          <h1 className="text-2xl leading-tight text-ink font-display sm:text-[28px]">
             Industry Pulse
           </h1>
-          <p className="mt-1 text-sm text-[#1B2438]/60">What SRMS alumni know and what jobs on SRMS Connect are asking for.</p>
+          <p className="mt-1 text-sm text-ink/60">What SRMS alumni know and what jobs on SRMS Connect are asking for.</p>
         </div>
         <InsightTabs />
       </header>
@@ -89,7 +89,7 @@ export default function IndustryPulsePage() {
                 emptyText="No open jobs right now."
               />
               {pulse.job_types.length > 0 && (
-                <p className="mt-4 border-t border-[#1B2438]/8 pt-3 text-xs text-[#1B2438]/60">
+                <p className="mt-4 border-t border-ink/8 pt-3 text-xs text-ink/60">
                   By type: {pulse.job_types.map((t) => `${jobTypeName(t.job_type)} ${t.open_jobs}`).join(" · ")}
                 </p>
               )}
@@ -98,14 +98,14 @@ export default function IndustryPulsePage() {
 
           <InsightCard title="Trending skills" basis={pulse.trending_skills.basis}>
             {pulse.trending_skills.skills.length === 0 ? (
-              <p className="py-6 text-center text-sm text-[#1B2438]/45">
+              <p className="py-6 text-center text-sm text-ink/45">
                 No jobs with skills were posted in the last {pulse.trending_skills.window_days} days, so there is no trend to show.
               </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-[#1B2438]/10 text-xs text-[#1B2438]/50">
+                    <tr className="border-b border-ink/10 text-xs text-ink/50">
                       <th scope="col" className="py-2 pr-3 font-medium">Skill</th>
                       <th scope="col" className="py-2 pr-3 text-right font-medium">Jobs, last {pulse.trending_skills.window_days} days</th>
                       <th scope="col" className="py-2 pr-3 text-right font-medium">Jobs, {pulse.trending_skills.window_days} days before</th>
@@ -116,10 +116,10 @@ export default function IndustryPulsePage() {
                     {pulse.trending_skills.skills.map((skill) => {
                       const trend = trendLabel(skill);
                       return (
-                        <tr key={skill.skill_key} className="border-b border-[#1B2438]/5 last:border-0">
-                          <th scope="row" className="py-2 pr-3 font-medium text-[#1B2438]">{skill.skill}</th>
-                          <td className="py-2 pr-3 text-right tabular-nums text-[#1B2438]">{skill.recent}</td>
-                          <td className="py-2 pr-3 text-right tabular-nums text-[#1B2438]/60">{skill.previous}</td>
+                        <tr key={skill.skill_key} className="border-b border-ink/5 last:border-0">
+                          <th scope="row" className="py-2 pr-3 font-medium text-ink">{skill.skill}</th>
+                          <td className="py-2 pr-3 text-right tabular-nums text-ink">{skill.recent}</td>
+                          <td className="py-2 pr-3 text-right tabular-nums text-ink/60">{skill.previous}</td>
                           {/* symbol + words, so the direction never depends on colour */}
                           <td className={`py-2 ${TREND_TONES[trend.tone]}`}>
                             <span aria-hidden="true" className="mr-1.5">{trend.symbol}</span>
@@ -134,9 +134,9 @@ export default function IndustryPulsePage() {
             )}
           </InsightCard>
 
-          <p className="text-center text-sm text-[#1B2438]/60">
+          <p className="text-center text-sm text-ink/60">
             Want to see how your own skills compare?{" "}
-            <Link to="/skill-gap" className="font-medium text-[#C98A2B] hover:text-[#B37A22]">Open My Skill Gap</Link>
+            <Link to="/skill-gap" className="font-medium text-accent-700 hover:text-accent-800">Open My Skill Gap</Link>
           </p>
         </>
       )}

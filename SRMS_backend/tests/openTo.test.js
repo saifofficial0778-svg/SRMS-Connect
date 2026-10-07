@@ -1,7 +1,7 @@
 process.env.JWT_SECRET = "test-secret";
 process.env.JWT_EXPIRES_IN = "1h";
 
-const { test, before, after, afterEach, mock } = require("node:test");
+const { test, before, after, beforeEach, afterEach, mock } = require("node:test");
 const assert = require("node:assert/strict");
 const http = require("http");
 const express = require("express");
@@ -20,6 +20,10 @@ const { searchQuerySchema } = require("../src/modules/search/search.validation")
 const qb = require("../src/modules/search/search.queryBuilder");
 const globalErrorHandler = require("../src/middlewares/errorMiddleware");
 
+const stubAnalytics = require("./helpers/stubAnalytics");
+
+// searching and opening a profile also record analytics; never let a test reach the real database
+beforeEach(() => stubAnalytics(mock));
 afterEach(() => mock.restoreAll());
 
 // ======================= validation =======================

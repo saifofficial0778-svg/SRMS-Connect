@@ -1,5 +1,6 @@
 const SearchRepository = require("./search.repository");
 const SkillService = require("../skill/skill.service");
+const AnalyticsService = require("../analytics/analytics.service");
 
 const QUICK_LIMIT = 5; // navbar dropdown
 const LIST_LIMIT = 12; // directory page
@@ -44,9 +45,14 @@ const pagination = (page, limit, total) => ({
     totalPages: Math.max(1, Math.ceil(total / limit)),
 });
 
+const TARGETING_FIELDS = ["q", "company", "designation", "branch", "batch", "openTo"];
+const isTargetedSearch = (query) =>
+    TARGETING_FIELDS.some((field) => query[field] !== undefined && query[field] !== "") || Boolean(query.skills && query.skills.length);
+
 const SearchService = {
 
-    async search(viewerId, query) {
+    // viewerRole is optional; it only decides whether this search is counted in people's analytics
+    async search(viewerId, query, viewerRole) {
         const { type, page } = query;
         const limit = query.limit ?? (type === "all" ? QUICK_LIMIT : LIST_LIMIT);
         const offset = (page - 1) * limit;
@@ -83,6 +89,12 @@ const SearchService = {
             ]);
             people = rows.map((r) => toPublicPerson(r, skillsByProfile[r.profile_id], openToByProfile[r.profile_id]));
             pageInfo = pagination(page, limit, total);
+
+            // Only a real search counts: something typed or a filter chosen. Simply opening the
+            // directory lists everyone and would say nothing about who was looked for.
+            if (isTargetedSearch(query)) {
+                await AnalyticsService.trackSearchAppearances({ userId: viewerId, role: viewerRole }, people.map((p) => p.user_id));
+            }
         }
 
         if (type === "all") {
@@ -107,3 +119,4 @@ const SearchService = {
 
 module.exports = SearchService;
 module.exports.toPublicPerson = toPublicPerson;
+module.exports.isTargetedSearch = isTargetedSearch;

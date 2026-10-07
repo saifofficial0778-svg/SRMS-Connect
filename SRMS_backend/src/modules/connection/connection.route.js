@@ -22,4 +22,10 @@ router.get("/requests/received", ConnectionController.getReceivedRequests);
 
 router.get("/requests/sent", ConnectionController.getSentRequests);
 
+// "People you may know" for the signed-in member
+router.get("/suggestions", ConnectionController.getSuggestions);
+
+// the people a member is connected with (suggestions under their profile)
+router.get("/of/:userId", ConnectionController.getProfileConnections);
+
 module.exports = router;

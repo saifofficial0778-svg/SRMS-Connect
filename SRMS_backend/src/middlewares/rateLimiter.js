@@ -86,6 +86,22 @@ const analyticsLimiter = createLimiter({
     message: "Too many requests. Please try again in a minute.",
 });
 
+// "these posts were on my screen" reports from the feed (the client batches them)
+const impressionLimiter = createLimiter({
+    windowMs: MINUTE,
+    max: 60,
+    keyGenerator: (req) => (req.user ? `user:${req.user.userId}` : keyByIp(req)),
+    message: "Too many requests. Please try again in a minute.",
+});
+
+// admin console changes (Campus Spotlight): keyed by the signed-in admin
+const adminWriteLimiter = createLimiter({
+    windowMs: 15 * MINUTE,
+    max: 120,
+    keyGenerator: (req) => (req.user ? `user:${req.user.userId}` : keyByIp(req)),
+    message: "Too many changes. Please try again in a few minutes.",
+});
+
 // mentorship and warm-introduction changes: keyed by the signed-in user
 const mentorshipWriteLimiter = createLimiter({
     windowMs: 15 * MINUTE,
@@ -97,6 +113,8 @@ const mentorshipWriteLimiter = createLimiter({
 module.exports = {
     createLimiter,
     mentorshipWriteLimiter,
+    impressionLimiter,
+    adminWriteLimiter,
     analyticsLimiter,
     careerWriteLimiter,
     jobWriteLimiter,

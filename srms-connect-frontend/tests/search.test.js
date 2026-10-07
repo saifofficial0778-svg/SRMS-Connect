@@ -13,7 +13,7 @@ import {
   parsePage,
   urlToFilters,
 } from "../src/utils/searchParams.js";
-import { academicLine, headline, isVerifiedAlumni, searchResultSubtitle } from "../src/utils/personFormat.js";
+import { academicLine, firstName, headline, isVerifiedAlumni, searchResultSubtitle, suggestionAction, suggestionSubtitle } from "../src/utils/personFormat.js";
 import { createSearchClient } from "../src/services/searchClient.js";
 import { createDebouncedSearcher } from "../src/services/searchFlow.js";
 
@@ -254,4 +254,27 @@ test("flow: cancel() stops a pending search and ignores in-flight results", asyn
   resolve({ people: [] });
   await tick();
   assert.equal(states.some((s) => s.status === "success"), false);
+});
+
+// ======================= suggestions under a profile =======================
+
+test("suggestion card: first name, subtitle and the right button for each relation", () => {
+  assert.equal(firstName("Aditi Chauhan"), "Aditi");
+  assert.equal(firstName("  Om  "), "Om");
+  assert.equal(firstName(null), "this member");
+
+  assert.equal(suggestionSubtitle({ role: "ALUMNI", designation: "Engineer", company: "Acme" }), "Engineer at Acme");
+  assert.equal(suggestionSubtitle({ role: "STUDENT", branch: "CA", batch_year: 2025 }), "CA · Batch 2025");
+  assert.equal(suggestionSubtitle({ role: "ALUMNI" }), "SRMS alumnus");
+  assert.equal(suggestionSubtitle({ role: "STUDENT" }), "SRMS student");
+
+  assert.deepEqual(suggestionAction("none"), { kind: "connect", label: "Connect", tone: "primary" });
+  assert.deepEqual(suggestionAction(undefined), { kind: "connect", label: "Connect", tone: "primary" });
+  assert.deepEqual(suggestionAction("sent"), { kind: "status", label: "Pending", tone: "muted" }); // no second request
+  const connected = suggestionAction("connected");
+  assert.equal(connected.kind, "link");
+  assert.equal(connected.to({ user_id: 9 }), "/profile/9");
+  const received = suggestionAction("received");
+  assert.equal(received.label, "Respond");
+  assert.equal(received.to({ user_id: 9 }), "/network");
 });

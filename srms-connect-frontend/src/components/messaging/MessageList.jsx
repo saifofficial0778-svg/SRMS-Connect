@@ -48,8 +48,8 @@ export default function MessageList({ messages, loading, currentUserId, onRetryM
     return (
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="text-center">
-          <p className="text-sm font-medium text-[#1B2438]">No messages yet</p>
-          <p className="mt-1 text-xs text-[#1B2438]/50">Start the conversation 👋</p>
+          <p className="text-sm font-medium text-ink">No messages yet</p>
+          <p className="mt-1 text-xs text-ink/50">Start the conversation 👋</p>
         </div>
       </div>
     );
@@ -73,11 +73,11 @@ export default function MessageList({ messages, loading, currentUserId, onRetryM
             <div key={m.id}>
               {showDayDivider && (
                 <div className="flex items-center gap-3 my-3">
-                  <div className="flex-1 h-px bg-[#1B2438]/8" />
-                  <span className="text-[11px] text-[#1B2438]/40">
+                  <div className="flex-1 h-px bg-ink/8" />
+                  <span className="rounded-full bg-ink/[0.05] px-2.5 py-0.5 text-[11px] font-medium text-ink/50">
                     {formatDayLabel(m.created_at)}
                   </span>
-                  <div className="flex-1 h-px bg-[#1B2438]/8" />
+                  <div className="flex-1 h-px bg-ink/8" />
                 </div>
               )}
               <div className={showTail ? "mb-2.5" : "mb-0.5"}>
@@ -97,7 +97,7 @@ export default function MessageList({ messages, loading, currentUserId, onRetryM
       {newMessagesCount > 0 && (
         <button
           onClick={() => scrollToBottom()}
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#1B2438] text-white text-xs font-medium shadow-lg"
+          className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-brand px-3.5 py-1.5 text-xs font-medium text-white shadow-raised animate-rise"
         >
           <ChevronDownIcon className="w-3.5 h-3.5" />
           New messages

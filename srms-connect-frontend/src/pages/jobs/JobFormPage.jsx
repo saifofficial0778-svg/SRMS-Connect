@@ -13,15 +13,15 @@ import useToast from "../../hooks/useToast";
 import ToastStack from "../../components/ui/Toast";
 
 const inputClass =
-  "w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#1B2438] placeholder:text-[#1B2438]/35 focus:outline-none focus:ring-2 focus:ring-[#C98A2B]/20";
+  "w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:outline-none focus:ring-2 focus:ring-brand/20";
 
 function Field({ label, error, hint, children }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-[#1B2438]">{label}</span>
+      <span className="mb-1 block text-sm font-medium text-ink">{label}</span>
       {children}
-      {hint && !error && <span className="mt-1 block text-xs text-[#1B2438]/45">{hint}</span>}
-      {error && <span role="alert" className="mt-1 block text-xs text-red-600">{error}</span>}
+      {hint && !error && <span className="mt-1 block text-xs text-ink/45">{hint}</span>}
+      {error && <span role="alert" className="mt-1 block text-xs text-danger">{error}</span>}
     </label>
   );
 }
@@ -62,7 +62,7 @@ export default function JobFormPage() {
     setForm((f) => ({ ...f, [field]: e.target.value }));
     setErrors((errs) => (errs[field] ? { ...errs, [field]: undefined } : errs));
   };
-  const borderFor = (field) => (errors[field] ? "border-red-300" : "border-[#1B2438]/15 focus:border-[#C98A2B]/60");
+  const borderFor = (field) => (errors[field] ? "border-red-300" : "border-ink/15 focus:border-brand/60");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,31 +86,31 @@ export default function JobFormPage() {
   };
 
   if (editing && loaded.id !== id) {
-    return <div className="max-w-2xl mx-auto px-4 py-10 text-center text-sm text-[#1B2438]/50" aria-busy="true">Loading...</div>;
+    return <div className="max-w-2xl mx-auto px-4 py-10 text-center text-sm text-ink/50" aria-busy="true">Loading...</div>;
   }
   if (editing && loaded.error) {
     return (
       <div className="max-w-md mx-auto mt-16 text-center px-4">
-        <p className="font-medium text-[#1B2438]">{loaded.error}</p>
-        <Link to="/jobs" className="mt-4 inline-block rounded-lg bg-[#1B2438] px-4 py-2 text-sm text-white">Back to jobs</Link>
+        <p className="font-medium text-ink">{loaded.error}</p>
+        <Link to="/jobs" className="mt-4 inline-block rounded-lg bg-ink px-4 py-2 text-sm text-white">Back to jobs</Link>
       </div>
     );
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <Link to={editing ? `/jobs/${id}` : "/jobs"} className="text-sm font-medium text-[#C98A2B] hover:text-[#B37A22]">
+      <Link to={editing ? `/jobs/${id}` : "/jobs"} className="text-sm font-medium text-accent-700 hover:text-accent-800">
         &larr; {editing ? "Back to job" : "All jobs"}
       </Link>
 
-      <h1 className="mt-3 text-3xl text-[#1B2438]" style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}>
+      <h1 className="mt-3 text-3xl text-ink font-display">
         {editing ? "Edit job" : "Post a job"}
       </h1>
-      <p className="mt-1 text-sm text-[#1B2438]/60">
+      <p className="mt-1 text-sm text-ink/60">
         Share an opportunity with students and fellow alumni. Applicants apply on your own site.
       </p>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4 rounded-2xl border border-[#1B2438]/10 bg-white p-5 sm:p-7">
+      <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4 card p-5 sm:p-7">
         <Field label="Job title" error={errors.title}>
           <input value={form.title} onChange={set("title")} placeholder="e.g. Software Engineer" maxLength={150} className={`${inputClass} ${borderFor("title")}`} />
         </Field>
@@ -162,14 +162,14 @@ export default function JobFormPage() {
         <div className="flex items-center justify-end gap-3 pt-2">
           <Link
             to={editing ? `/jobs/${id}` : "/jobs"}
-            className="rounded-lg border border-[#1B2438]/15 px-4 py-2.5 text-sm font-medium text-[#1B2438]/70 hover:bg-[#1B2438]/5"
+            className="rounded-lg border border-ink/15 px-4 py-2.5 text-sm font-medium text-ink/70 hover:bg-ink/5"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg bg-[#C98A2B] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#B37A22] disabled:opacity-60 transition-colors"
+            className="rounded-lg bg-brand px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-60 transition-colors"
           >
             {submitting ? "Saving..." : editing ? "Save changes" : "Post job"}
           </button>

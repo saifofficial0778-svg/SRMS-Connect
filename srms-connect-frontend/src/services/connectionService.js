@@ -37,7 +37,18 @@ export const getReceivedRequests = async () => {
   return response.data;
 };
 
+// the members someone is connected with, and how you stand with each (suggestions under a profile)
+export const getProfileConnections = async (userId) => {
+  const response = await authApi.get(`${BASE}/of/${userId}`);
+  return response.data?.data?.people || [];
+};
+
 export const getSentRequests = async () => {
   const response = await authApi.get(`${BASE}/requests/sent`);
   return response.data;
+};
+// "People you may know": members you are not connected with, best-connected first
+export const getSuggestions = async () => {
+  const response = await authApi.get(`${BASE}/suggestions`);
+  return response.data?.data?.people || [];
 };

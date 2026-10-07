@@ -97,9 +97,9 @@ export default function ResetPassword() {
         </AuthButton>
       </form>
 
-      <p className="text-center text-sm text-[#1B2438]/60 mt-6">
+      <p className="text-center text-sm text-ink/60 mt-6">
         Remember your password?{" "}
-        <Link to="/login" className="text-[#C98A2B] hover:text-[#B37A22] font-medium">
+        <Link to="/login" className="text-accent-700 hover:text-accent-800 font-medium">
           Back to Login
         </Link>
       </p>

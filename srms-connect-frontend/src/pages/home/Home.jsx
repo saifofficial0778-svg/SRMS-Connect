@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../../services/authService";
+import { Megaphone, PenLine } from "lucide-react";
 import { getFeed } from "../../services/postService";
 import { getProfile } from "../../services/profileService";
 import {
@@ -16,30 +16,48 @@ import {
 import { getOrCreateConversation } from "../../services/chatService";
 import useToast from "../../hooks/useToast";
 import ToastStack from "../../components/ui/Toast";
-import Avatar from "../../components/profile/Avatar";
+import Button from "../../components/ui/Button";
+import HorizontalSlider from "../../components/ui/HorizontalSlider";
+import { EmptyState, ErrorState, SkeletonCard } from "../../components/ui/Primitives";
 import PostComposer from "../../components/feed/PostComposer";
 import PostCard from "../../components/feed/PostCard";
+import ImpressionSentinel from "../../components/feed/ImpressionSentinel";
+import useAsyncData from "../../hooks/useAsyncData";
+import { listSpotlights } from "../../services/spotlightService";
+import {
+  CampusSpotlightCard,
+  OpportunitiesCard,
+  PeopleYouMayKnowCard,
+  ProfileSummaryCard,
+  QuickLinksCard,
+  RailFooter,
+  SpotlightItem,
+  TrendingSkillsCard,
+} from "../../components/home/HomeRail";
 
 const PAGE_LIMIT = 10;
 
+// Home: who you are (left), what the community is saying (centre), what is worth knowing (right).
+//   xl and up   three columns
+//   lg          two columns - the right rail's Campus Spotlight moves into a strip above the feed
+//   below lg    one column - the feed first, with the spotlight strip on top
 export default function Home() {
   const navigate = useNavigate();
   const { toasts, showToast, dismiss } = useToast();
 
+  const [profile, setProfile] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState("loading"); // loading | ready | error
   const [loadingMore, setLoadingMore] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  // loaded once here: the right rail lists them, narrower layouts show them as a strip
+  const spotlights = useAsyncData(listSpotlights);
 
   // connectionMap: { [otherUserId]: { status: "none"|"sent"|"received"|"connected", connectionId } }
   const [connectionMap, setConnectionMap] = useState({});
-
-  const handleLogout = async () => {
-    await logoutUser();
-    navigate("/login");
-  };
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +65,7 @@ export default function Home() {
     (async () => {
       try {
         const [profileRes, feedRes, connRes, recvRes, sentRes] = await Promise.all([
-          getProfile(),
+          getProfile().catch(() => null), // an admin has no profile; the feed still works
           getFeed(1, PAGE_LIMIT),
           getMyConnections(),
           getReceivedRequests(),
@@ -55,16 +73,14 @@ export default function Home() {
         ]);
         if (cancelled) return;
 
-        const profile = profileRes?.data || {};
-        const myId = profile.user_id ?? Number(localStorage.getItem("userId"));
-        setCurrentUser({
-          id: myId,
-          full_name: profile.full_name,
-          profile_photo: profile.profile_photo,
-        });
+        const data = profileRes?.data || {};
+        const myId = data.user_id ?? Number(localStorage.getItem("userId"));
+        setProfile(profileRes ? data : null);
+        setCurrentUser({ id: myId, full_name: data.full_name, profile_photo: data.profile_photo });
 
         const feedPosts = feedRes?.data?.posts || [];
         setPosts(feedPosts);
+        setPage(1);
         setHasMore(feedPosts.length === PAGE_LIMIT);
 
         const otherIdOf = (row) => (row.sender_id === myId ? row.receiver_id : row.sender_id);
@@ -79,18 +95,21 @@ export default function Home() {
           map[row.receiver_id] = { status: "sent", connectionId: row.id };
         });
         setConnectionMap(map);
-      } catch (err) {
-        if (!cancelled) showToast("Couldn't load your feed.", "error");
-      } finally {
-        if (!cancelled) setLoading(false);
+        setStatus("ready");
+      } catch {
+        if (!cancelled) setStatus("error");
       }
     })();
 
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [attempt]);
+
+  const retry = () => {
+    setStatus("loading");
+    setAttempt((n) => n + 1);
+  };
 
   const loadMore = async () => {
     setLoadingMore(true);
@@ -98,19 +117,18 @@ export default function Home() {
       const nextPage = page + 1;
       const res = await getFeed(nextPage, PAGE_LIMIT);
       const morePosts = res?.data?.posts || [];
-      setPosts((prev) => [...prev, ...morePosts]);
+      // a post that moved between pages while you were reading is not shown twice
+      setPosts((prev) => [...prev, ...morePosts.filter((p) => !prev.some((x) => x.id === p.id))]);
       setPage(nextPage);
       setHasMore(morePosts.length === PAGE_LIMIT);
-    } catch (err) {
+    } catch {
       showToast("Couldn't load more posts.", "error");
     } finally {
       setLoadingMore(false);
     }
   };
 
-  const handlePostCreated = (newPost) => {
-    setPosts((prev) => [newPost, ...prev]);
-  };
+  const handlePostCreated = (newPost) => setPosts((prev) => [newPost, ...prev]);
 
   const handlePostDeleted = (postId) => {
     setPosts((prev) => prev.filter((p) => p.id !== postId));
@@ -119,143 +137,142 @@ export default function Home() {
 
   // ---- connection actions, shared by every PostCard via connectionMap ----
 
+  const setRelation = (userId, relation, connectionId = null) =>
+    setConnectionMap((prev) => ({ ...prev, [userId]: { status: relation, connectionId } }));
+  const fail = (err, fallback) => showToast(err?.response?.data?.message || fallback, "error");
+
   const handleConnect = async (targetUserId) => {
     try {
       const res = await sendConnectionRequest(targetUserId);
-      setConnectionMap((prev) => ({
-        ...prev,
-        [targetUserId]: { status: "sent", connectionId: res?.data },
-      }));
+      setRelation(targetUserId, "sent", res?.data);
     } catch (err) {
-      showToast(err?.response?.data?.message || "Couldn't send request.", "error");
+      fail(err, "Couldn't send request.");
     }
   };
-
   const handleCancel = async (targetUserId, connectionId) => {
     try {
       await cancelConnectionRequest(connectionId);
-      setConnectionMap((prev) => ({ ...prev, [targetUserId]: { status: "none", connectionId: null } }));
+      setRelation(targetUserId, "none");
     } catch (err) {
-      showToast(err?.response?.data?.message || "Couldn't cancel request.", "error");
+      fail(err, "Couldn't cancel request.");
     }
   };
-
   const handleAccept = async (targetUserId, connectionId) => {
     try {
       await acceptConnectionRequest(connectionId);
-      setConnectionMap((prev) => ({ ...prev, [targetUserId]: { status: "connected", connectionId } }));
+      setRelation(targetUserId, "connected", connectionId);
     } catch (err) {
-      showToast(err?.response?.data?.message || "Couldn't accept request.", "error");
+      fail(err, "Couldn't accept request.");
     }
   };
-
   const handleReject = async (targetUserId, connectionId) => {
     try {
       await rejectConnectionRequest(connectionId);
-      setConnectionMap((prev) => ({ ...prev, [targetUserId]: { status: "none", connectionId: null } }));
+      setRelation(targetUserId, "none");
     } catch (err) {
-      showToast(err?.response?.data?.message || "Couldn't reject request.", "error");
+      fail(err, "Couldn't reject request.");
     }
   };
-
   const handleRemove = async (targetUserId, connectionId) => {
     try {
       await removeConnection(connectionId);
-      setConnectionMap((prev) => ({ ...prev, [targetUserId]: { status: "none", connectionId: null } }));
+      setRelation(targetUserId, "none");
     } catch (err) {
-      showToast(err?.response?.data?.message || "Couldn't remove connection.", "error");
+      fail(err, "Couldn't remove connection.");
     }
   };
-
   const handleMessage = async (targetUserId) => {
     try {
       const res = await getOrCreateConversation(targetUserId);
       const conversationId = res?.data?.id || res?.data?._id || res?.data?.conversationId;
       navigate("/chat", { state: { conversationId, userId: targetUserId } });
     } catch (err) {
-      showToast(err?.response?.data?.message || "Couldn't open chat.", "error");
+      fail(err, "Couldn't open chat.");
     }
   };
 
+  const liveSpotlights = spotlights.data || [];
+
   return (
-    <div className="min-h-screen bg-[#F5F6F8]">
-      <nav className="bg-[#1B2438] sticky top-0 z-30">
-        <div className="max-w-2xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <h1
-            className="text-xl text-white"
-            style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-          >
-            SRMS Connect
-          </h1>
-          <div className="flex items-center gap-3">
-            <Avatar
-              photoUrl={currentUser?.profile_photo}
-              fullName={currentUser?.full_name}
-              size={34}
-            />
-            <button
-              onClick={handleLogout}
-              className="px-3.5 py-1.5 rounded-lg text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors"
-            >
-              Logout
-            </button>
-          </div>
+    <div className="mx-auto max-w-7xl px-3 py-5 sm:px-6 sm:py-6">
+      <h1 className="sr-only">Home</h1>
+      <div className="grid items-start gap-5 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[250px_minmax(0,1fr)_320px]">
+        {/* LEFT: identity and shortcuts */}
+        <aside className="hidden space-y-4 lg:sticky lg:top-[5.25rem] lg:block" aria-label="You">
+          <ProfileSummaryCard profile={status === "loading" ? null : profile || { full_name: "SRMS Member", role: localStorage.getItem("role") }} />
+          <QuickLinksCard role={profile?.role || localStorage.getItem("role")} />
+        </aside>
+
+        {/* CENTRE: composer and feed */}
+        <div className="min-w-0 space-y-4">
+          {/* Campus Spotlight as a strip wherever the right rail is not on screen */}
+          {liveSpotlights.length > 0 && (
+            <section aria-label="Campus Spotlight" className="xl:hidden">
+              <h2 className="mb-2 flex items-center gap-2 px-1 text-sm text-ink font-display">
+                <Megaphone className="h-4 w-4 text-ink/45" strokeWidth={1.9} aria-hidden="true" />
+                Campus Spotlight
+              </h2>
+              <HorizontalSlider label="Campus Spotlight">
+                {liveSpotlights.map((s) => <li key={s.id} className="flex"><SpotlightItem spotlight={s} compact /></li>)}
+              </HorizontalSlider>
+            </section>
+          )}
+
+          {currentUser && profile && <PostComposer currentUser={currentUser} onPostCreated={handlePostCreated} showToast={showToast} />}
+
+          {status === "loading" && (
+            <>
+              <SkeletonCard avatar lines={3} />
+              <SkeletonCard avatar lines={4} />
+              <SkeletonCard avatar lines={2} />
+            </>
+          )}
+
+          {status === "error" && <ErrorState title="Couldn't load your feed" onRetry={retry} />}
+
+          {status === "ready" && posts.length === 0 && (
+            <EmptyState icon={PenLine} title="Your feed is quiet">
+              Nobody has posted yet. Share an update, a question or an opportunity with the SRMS community.
+            </EmptyState>
+          )}
+
+          {status === "ready" &&
+            posts.map((post) => (
+              // counts as an impression for the author once the post has really been on screen
+              <ImpressionSentinel key={post.id} postId={post.id} disabled={post.user_id === currentUser?.id}>
+                <PostCard
+                  post={post}
+                  currentUser={currentUser}
+                  showToast={showToast}
+                  onDeleted={handlePostDeleted}
+                  connectionInfo={connectionMap[post.user_id] || { status: "none", connectionId: null }}
+                  onConnect={() => handleConnect(post.user_id)}
+                  onCancel={() => handleCancel(post.user_id, connectionMap[post.user_id]?.connectionId)}
+                  onAccept={() => handleAccept(post.user_id, connectionMap[post.user_id]?.connectionId)}
+                  onReject={() => handleReject(post.user_id, connectionMap[post.user_id]?.connectionId)}
+                  onRemove={() => handleRemove(post.user_id, connectionMap[post.user_id]?.connectionId)}
+                  onMessage={() => handleMessage(post.user_id)}
+                />
+              </ImpressionSentinel>
+            ))}
+
+          {status === "ready" && hasMore && posts.length > 0 && (
+            <div className="flex justify-center pb-4 pt-1">
+              <Button variant="secondary" onClick={loadMore} loading={loadingMore}>Show more posts</Button>
+            </div>
+          )}
+          {status === "ready" && !hasMore && posts.length > 0 && <p className="pb-4 pt-1 text-center text-xs text-ink/40">You're all caught up.</p>}
         </div>
-      </nav>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        {currentUser && (
-          <PostComposer
-            currentUser={currentUser}
-            onPostCreated={handlePostCreated}
-            showToast={showToast}
-          />
-        )}
-
-        {loading && (
-          <div className="text-center py-10 text-[#1B2438]/40 text-sm">
-            Loading your feed...
-          </div>
-        )}
-
-        {!loading && posts.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-[#1B2438]/50 text-sm">
-              No posts yet — be the first to share something with your college.
-            </p>
-          </div>
-        )}
-
-        {!loading &&
-          posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              currentUser={currentUser}
-              showToast={showToast}
-              onDeleted={handlePostDeleted}
-              connectionInfo={connectionMap[post.user_id] || { status: "none", connectionId: null }}
-              onConnect={() => handleConnect(post.user_id)}
-              onCancel={() => handleCancel(post.user_id, connectionMap[post.user_id]?.connectionId)}
-              onAccept={() => handleAccept(post.user_id, connectionMap[post.user_id]?.connectionId)}
-              onReject={() => handleReject(post.user_id, connectionMap[post.user_id]?.connectionId)}
-              onRemove={() => handleRemove(post.user_id, connectionMap[post.user_id]?.connectionId)}
-              onMessage={() => handleMessage(post.user_id)}
-            />
-          ))}
-
-        {!loading && hasMore && posts.length > 0 && (
-          <div className="text-center pt-2 pb-6">
-            <button
-              onClick={loadMore}
-              disabled={loadingMore}
-              className="px-5 py-2 rounded-lg text-sm font-medium text-[#1B2438] border border-[#1B2438]/15 hover:bg-white disabled:opacity-50"
-            >
-              {loadingMore ? "Loading..." : "Load more"}
-            </button>
-          </div>
-        )}
-      </main>
+        {/* RIGHT: what is worth knowing right now */}
+        <aside className="hidden space-y-4 xl:sticky xl:top-[5.25rem] xl:block" aria-label="For you">
+          <CampusSpotlightCard state={spotlights} />
+          <PeopleYouMayKnowCard showToast={showToast} />
+          <OpportunitiesCard />
+          <TrendingSkillsCard />
+          <RailFooter />
+        </aside>
+      </div>
 
       <ToastStack toasts={toasts} onDismiss={dismiss} />
     </div>
